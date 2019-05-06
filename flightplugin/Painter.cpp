@@ -32,11 +32,11 @@ void Painter::drawPanels(CanvasWrapper cw)
 		RBState rbstate = car.GetRBState();
 		if (cvarManager->getCvar("showCarDerivedInfo").getBoolValue())
 		{
-			drawCarDerivedInfo(cw, car, 20, 55);
+			drawCarDerivedInfo(cw, car, 20, 610);
 		}
 		if (cvarManager->getCvar("showYaw").getBoolValue())
 		{
-			drawYawPlane(cw, car, 20, 700, 1);
+			drawYawPlane(cw, car, 20, 400, 1);
 		}
 	}
 }
@@ -58,119 +58,76 @@ void Painter::drawLine(CanvasWrapper cw, Vector2_ v1, Vector2_ v2)
 	cw.DrawLine({ v1.X, v1.Y }, { v2.X, v2.Y });
 }
 
-void Painter::drawRBStatePanel(CanvasWrapper cw, std::string title, RBState rbstate, int x, int y, bool recording)
-{
-	Vector loc = rbstate.Location;
-	Vector lin = rbstate.LinearVelocity;
-	Quat quat = rbstate.Quaternion;
-	Vector ang = rbstate.AngularVelocity;
-	int marginLeft = 30;
-	int marginTop = 20;
-	int nameSpacing = 100;
-	int vecSpacing = 80;
-	int quatSpacing = 120;
-	int lineSpacing = 30;
-	int width = 620;
-	int height = 210;
-	cw.SetPosition({ x, y });
-	cw.SetColor(COLOR_PANEL);
-	cw.FillBox({ width, height });
-	cw.SetColor(COLOR_TEXT);
-
-	this->drawStringAt(cw, title, x + marginLeft, y + marginTop);
-	int currentLine = marginTop + 50;
-	this->drawStringAt(cw, "Location", x + marginLeft, y + currentLine);
-	this->drawStringAt(cw, sp::to_string(loc.X, 2), x + marginLeft + nameSpacing, y + currentLine);
-	this->drawStringAt(cw, sp::to_string(loc.Y, 2), x + marginLeft + nameSpacing + vecSpacing, y + currentLine);
-	this->drawStringAt(cw, sp::to_string(loc.Z, 2), x + marginLeft + nameSpacing + vecSpacing * 2, y + currentLine);
-	currentLine += lineSpacing;
-	this->drawStringAt(cw, "Lin. Velocity", x + marginLeft, y + currentLine);
-	this->drawStringAt(cw, sp::to_string(lin.X, 2), x + marginLeft + nameSpacing, y + currentLine);
-	this->drawStringAt(cw, sp::to_string(lin.Y, 2), x + marginLeft + nameSpacing + vecSpacing, y + currentLine);
-	this->drawStringAt(cw, sp::to_string(lin.Z, 2), x + marginLeft + nameSpacing + vecSpacing * 2, y + currentLine);
-	currentLine += lineSpacing;
-	this->drawStringAt(cw, "Rotation", x + marginLeft, y + currentLine);
-	this->drawStringAt(cw, sp::to_string_scientific(quat.W), x + marginLeft + nameSpacing, y + currentLine);
-	this->drawStringAt(cw, sp::to_string_scientific(quat.X), x + marginLeft + nameSpacing + quatSpacing, y + currentLine);
-	this->drawStringAt(cw, sp::to_string_scientific(quat.Y), x + marginLeft + nameSpacing + quatSpacing * 2, y + currentLine);
-	this->drawStringAt(cw, sp::to_string_scientific(quat.Z), x + marginLeft + nameSpacing + quatSpacing * 3, y + currentLine);
-	currentLine += lineSpacing;
-	this->drawStringAt(cw, "Ang. Velocity", x + marginLeft, y + currentLine);
-	this->drawStringAt(cw, sp::to_string(ang.X, 4), x + marginLeft + nameSpacing, y + currentLine);
-	this->drawStringAt(cw, sp::to_string(ang.Y, 4), x + marginLeft + nameSpacing + vecSpacing, y + currentLine);
-	this->drawStringAt(cw, sp::to_string(ang.Z, 4), x + marginLeft + nameSpacing + vecSpacing * 2, y + currentLine);
-}
-
 void Painter::drawCarDerivedInfo(CanvasWrapper cw, CarWrapper car, int x, int y)
 {
+	// Car Info
 	RBState rbstate = car.GetRBState();
+
 	Vector loc = rbstate.Location;
-	Vector lin = rbstate.LinearVelocity; //this lin.magnitude = speed relative to world
-	Quat quat = rbstate.Quaternion;
+	Vector lin = rbstate.LinearVelocity; //this is world velocities
+	Quat quat = rbstate.Quaternion; // Quaternion describing the car's current basis
 	Vector ang = rbstate.AngularVelocity;
-	auto horVel = Vector(lin.X, lin.Y, 0);
-	Vector up = quatToUp(quat);
-	Vector right = quatToRight(quat);
-	Vector fwd = quatToFwd(quat);
+
+	// Car Frame
+	// Car's directions
+	Vector up = quatToUp(quat);  // Car's Up direction relative to world's xyz
+	Vector right = quatToRight(quat); // Car's Right vector relative to world's xyz
+	Vector fwd = quatToFwd(quat); // Car's forward vector relative to world's xyz
+
+	// Ground Speeds
+	Vector groundVel = Vector(lin.X, lin.Y, 0);
+	auto groundSpeed = abs(Vector::dot(groundVel, fwd)); // ground speed relative to cars forward
+
+	// Car's Velocities
 	auto linLocalFwd = Vector::dot(lin, fwd);
 	auto linLocalRight = Vector::dot(lin, right);
 	auto linLocalUp = Vector::dot(lin, up);
 	Vector linLocal = Vector(linLocalFwd, linLocalRight, linLocalUp);
-	auto lonSpeed = Vector::dot(horVel, fwd); //speed relative to cars forward
-	auto latSpeed = Vector::dot(horVel, right);
-	//	auto vsim = car.GetVehicleSim();
-	//	auto wheels = vsim.GetWheels();
+
 	int marginLeft = 10;
 	int marginTop = 20;
-	int nameSpacing = 100;
-	int vecSpacing = 120;
+	int titleSpacing = 120;
+	int nameSpacing = 130;
+	int vecSpacing = 70;
 	int quatSpacing = 120;
 	int lineSpacing = 30;
 	cw.SetPosition({ x, y });
 	cw.SetColor(COLOR_PANEL);
-	cw.FillBox({ 300, 375 });
+	cw.FillBox({ 360, 350 });
 	cw.SetColor(COLOR_TEXT);
 	cw.SetColor(205, 155, 15, 255);
-	this->drawStringAt(cw, "Flight Plugin", x + marginLeft, y + marginTop);
+	this->drawStringAt(cw, "Flight Plugin", x + titleSpacing, y + marginTop);
 	int currentLine = marginTop + 20;
 	cw.SetColor(255, 255, 255, 255);
-	this->drawStringAt(cw, "Speed", x + marginLeft, y + currentLine); //speed relative to cars forward
-	this->drawStringAt(cw, sp::to_string(lonSpeed, 4), x + marginLeft + nameSpacing, y + currentLine);
+	this->drawStringAt(cw, "Car Location", x + marginLeft, y + currentLine); // Car location in world
+	this->drawStringAt(cw, sp::vector_to_string(loc, 2), x + marginLeft + nameSpacing, y + currentLine);
 	currentLine += lineSpacing;
-	this->drawStringAt(cw, "Lat. speed", x + marginLeft, y + currentLine);
-	this->drawStringAt(cw, sp::to_string(latSpeed, 4), x + marginLeft + nameSpacing, y + currentLine);
-	currentLine += lineSpacing;
-	this->drawStringAt(cw, "Linear speed", x + marginLeft, y + currentLine); //this lin.magnitude = speed relative to world
+	this->drawStringAt(cw, "True Speed", x + marginLeft, y + currentLine); //this lin.magnitude = speed relative to world
 	this->drawStringAt(cw, sp::to_string(lin.magnitude(), 4), x + marginLeft + nameSpacing, y + currentLine);
-
 	currentLine += lineSpacing;
-	this->drawStringAt(cw, "up", x + marginLeft, y + currentLine);
-	this->drawStringAt(cw, sp::vector_to_string(up, 2), x + marginLeft + nameSpacing, y + currentLine);
+	this->drawStringAt(cw, "Ground Speed", x + marginLeft, y + currentLine); //speed relative to cars forward
+	this->drawStringAt(cw, sp::to_string(groundSpeed, 4), x + marginLeft + nameSpacing, y + currentLine);
 	currentLine += lineSpacing;
-	this->drawStringAt(cw, "right", x + marginLeft, y + currentLine);
-	this->drawStringAt(cw, sp::vector_to_string(right, 2), x + marginLeft + nameSpacing, y + currentLine);
+	this->drawStringAt(cw, "World Vel", x + marginLeft, y + currentLine);
+	this->drawStringAt(cw, sp::vector_to_string(lin, 4), x + marginLeft + nameSpacing, y + currentLine);
 	currentLine += lineSpacing;
-	this->drawStringAt(cw, "fwd", x + marginLeft, y + currentLine);
-	this->drawStringAt(cw, sp::vector_to_string(fwd, 2), x + marginLeft + nameSpacing, y + currentLine);
-
+	this->drawStringAt(cw, "Car Fwd/Rt/Up Vel", x + marginLeft, y + currentLine);
+	this->drawStringAt(cw, sp::vector_to_string(linLocal, 3), x + marginLeft + nameSpacing, y + currentLine);
 	currentLine += lineSpacing;
-	this->drawStringAt(cw, "quat", x + marginLeft, y + currentLine);
-	this->drawStringAt(cw, sp::quat_to_string(quat, 2), x + marginLeft + nameSpacing, y + currentLine);
-
+	this->drawStringAt(cw, "Quat (WXYZ)", x + marginLeft, y + currentLine);
+	this->drawStringAt(cw, sp::quat_to_string(quat, 3), x + marginLeft + nameSpacing, y + currentLine);
 	currentLine += lineSpacing;
-	this->drawStringAt(cw, "ang", x + marginLeft, y + currentLine);
-	this->drawStringAt(cw, sp::vector_to_string(ang, 2), x + marginLeft + nameSpacing, y + currentLine);
-
+	this->drawStringAt(cw, "Up", x + marginLeft, y + currentLine);
+	this->drawStringAt(cw, sp::vector_to_string(up, 5), x + marginLeft + nameSpacing, y + currentLine);
 	currentLine += lineSpacing;
-	this->drawStringAt(cw, "linLocalUp", x + marginLeft, y + currentLine);
-	this->drawStringAt(cw, sp::to_string(linLocalUp, 2), x + marginLeft + nameSpacing, y + currentLine);
+	this->drawStringAt(cw, "Right", x + marginLeft, y + currentLine);
+	this->drawStringAt(cw, sp::vector_to_string(right, 5), x + marginLeft + nameSpacing, y + currentLine);
 	currentLine += lineSpacing;
-	this->drawStringAt(cw, "linLocalRight", x + marginLeft, y + currentLine);
-	this->drawStringAt(cw, sp::to_string(linLocalRight, 2), x + marginLeft + nameSpacing, y + currentLine);
+	this->drawStringAt(cw, "Fwd", x + marginLeft, y + currentLine);
+	this->drawStringAt(cw, sp::vector_to_string(fwd, 5), x + marginLeft + nameSpacing, y + currentLine);
 	currentLine += lineSpacing;
-	this->drawStringAt(cw, "linLocalFwd", x + marginLeft, y + currentLine);
-	this->drawStringAt(cw, sp::to_string(linLocalFwd, 2), x + marginLeft + nameSpacing, y + currentLine);
-
+	this->drawStringAt(cw, "Angular Vel", x + marginLeft, y + currentLine);
+	this->drawStringAt(cw, sp::vector_to_string(ang, 5), x + marginLeft + nameSpacing, y + currentLine);
 }
 
 void Painter::drawVector(CanvasWrapper canvas, Vector vec)

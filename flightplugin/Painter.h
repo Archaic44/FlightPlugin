@@ -46,7 +46,6 @@ private:
 	void drawLine(CanvasWrapper cw, Vector2_ x, Vector2_ y);
 
 	void drawPanels(CanvasWrapper cw);
-	void drawRBStatePanel(CanvasWrapper cw, std::string title, RBState rbstate, int x, int y, bool recording);
 	void drawCarDerivedInfo(CanvasWrapper cw, CarWrapper car, int x, int y);
 	void drawYawPlane(CanvasWrapper cw, CarWrapper car, int x, int y, float scale);
 	void drawInputPanel(CanvasWrapper cw, CarWrapper car, int x, int y);

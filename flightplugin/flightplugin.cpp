@@ -27,7 +27,7 @@ void flightplugin::onLoad()
 {
 	gameWrapper->HookEvent("Function TAGame.Car_TA.SetVehicleInput", bind(&flightplugin::OnSetInput, this));
 
-	liftp = make_shared<float>(0.00385);
+	liftp = make_shared<float>(0.0385);
 	cvarManager->registerCvar("flight_lift", "0.0025", "Lift Power", true, true, 0, true, 1, true).bindTo(liftp);
 
 	dragp = make_shared<float>(0.1);
@@ -87,14 +87,15 @@ void flightplugin::OnSetInput()
 
 
 
-/*Lift*/ //default liftp is 0.00385
-	float lift = (*liftp) * lonSpeed;
+	// Lift 
+	/* float lift = (*liftp) * lonSpeed;
 	Vector liftd = { 0, 0, lift };
 	Vector lifted = (lin, up) * lift;
 	car.AddVelocity(liftd);
+	*/
 
-	/*Drag*/
-//	float drag = ((*dragp * lonSpeed) * -1);
-//	Vector dragp = {0, 0, drag};
-//	car.AddVelocity(dragp);
+	// Drag
+	/*	float drag = ((*dragp * lonSpeed) * -1);
+		Vector dragp = {0, 0, drag};
+		car.AddVelocity(dragp); */
 }
