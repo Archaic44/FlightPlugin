@@ -65,6 +65,7 @@ void Painter::drawCarDerivedInfo(CanvasWrapper cw, CarWrapper car, int x, int y)
 
 	Vector loc = rbstate.Location;
 	Vector lin = rbstate.LinearVelocity; //this is world velocities
+
 	Quat quat = rbstate.Quaternion; // Quaternion describing the car's current basis
 	Vector ang = rbstate.AngularVelocity;
 

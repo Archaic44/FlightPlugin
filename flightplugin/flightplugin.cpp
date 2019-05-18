@@ -33,6 +33,7 @@ void flightplugin::onLoad()
 	dragp = make_shared<float>(0.1);
 	cvarManager->registerCvar("flight_drag", "0.1", "You flyin thru mud", true, true, 0, true, 1).bindTo(dragp);
 
+	logger.cvarManager = this->cvarManager;
 	cmdManager.cvarManager = this->cvarManager;
 	cmdManager.gameWrapper = this->gameWrapper;
 
@@ -59,6 +60,18 @@ void flightplugin::onUnLoad()
 	flight_enabled = false;
 	return;
 }
+Vector flightplugin::reflect_v1_on_v2(Vector v1, Vector v2)
+{
+	Vector incident = v1.clone();
+	Vector norm = v2.clone();
+	Vector dot = Vector::dot(incident, norm);
+	auto twodot = dot * 2;
+	float x = twodot.X * norm.X + twodot.X * norm.Y + twodot.X * norm.Z;
+	float y = twodot.Y * norm.X + twodot.Y * norm.Y + twodot.Y * norm.Z;
+	float z = twodot.Z * norm.X + twodot.Z * norm.Y + twodot.Z * norm.Z;
+	Vector reflect = Vector(x, y, z) - incident;
+	return reflect*-1;
+}
 void flightplugin::OnSetInput()
 {
 	if (flight_enabled == false) //stops the plugin if flight_enabled isnt true
@@ -71,31 +84,25 @@ void flightplugin::OnSetInput()
 	RBState rbstate = car.GetRBState();
 
 	Vector loc = rbstate.Location;
-	Vector lin = rbstate.LinearVelocity;
-	Quat quat = rbstate.Quaternion;
-	Vector ang = rbstate.AngularVelocity;
-	auto horVel = Vector(lin.X, lin.Y, 0);
-	Vector up = quatToUp(quat);
-	Vector right = quatToRight(quat);
-	Vector fwd = quatToFwd(quat);
-	auto linLocalFwd = Vector::dot(lin, fwd);
-	auto linLocalRight = Vector::dot(lin, right);
-	auto linLocalUp = Vector::dot(lin, up);
-	Vector linLocal = Vector(linLocalFwd, linLocalRight, linLocalUp);
-	auto lonSpeed = Vector::dot(horVel, fwd);
-	auto latSpeed = Vector::dot(horVel, right);
+	Vector lin = rbstate.LinearVelocity; // Car velocity with respect to world
+	if (lin.magnitude() > 100) { // Skip flight calculations if velocity is small
+		Quat quat = rbstate.Quaternion;
+		// The following vectors describe the basis of the car (the 3 sides of the car)
+		Vector up = quatToUp(quat);  // Car's Up direction relative to world's xyz
+		Vector right = quatToRight(quat); // Car's Right vector relative to world's xyz
+		Vector fwd = quatToFwd(quat); // Car's forward vector relative to world's xyz
+		
+		// Linear Translation
+		Vector air = lin*-1; // Still air being pushed into car
+		Vector deflect_up = reflect_v1_on_v2(air, up); // Simulate air bouncing off car roof/bottom
+		Vector deflect_right = reflect_v1_on_v2(air, right); // Simulate air bouncing off car left/right
+		Vector deflect_fwd = reflect_v1_on_v2(air, fwd); // Simulate air bouncing off car front/back
+		cvarManager->log(sp::vector_to_string(deflect_right));
+		cvarManager->log(sp::vector_to_string(deflect_up));
+		cvarManager->log(sp::vector_to_string(deflect_fwd));
 
-
-
-	// Lift 
-	/* float lift = (*liftp) * lonSpeed;
-	Vector liftd = { 0, 0, lift };
-	Vector lifted = (lin, up) * lift;
-	car.AddVelocity(liftd);
-	*/
-
-	// Drag
-	/*	float drag = ((*dragp * lonSpeed) * -1);
-		Vector dragp = {0, 0, drag};
-		car.AddVelocity(dragp); */
+		car.AddVelocity(deflect_up*.1);
+		car.AddVelocity(deflect_right*.1);
+		car.AddVelocity(deflect_fwd*.1);
+	}
 }
