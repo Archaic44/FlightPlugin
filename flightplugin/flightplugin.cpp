@@ -27,14 +27,16 @@ void flightplugin::onLoad()
 {
 	gameWrapper->HookEvent("Function TAGame.Car_TA.SetVehicleInput", bind(&flightplugin::OnSetInput, this));
 
-	liftp = make_shared<float>(0.0385);
-	cvarManager->registerCvar("flight_lift", "0.0025", "Lift Power", true, true, 0, true, 1, true).bindTo(liftp);
+	liftmag = make_shared<float>();
+	cvarManager->registerCvar("flight_lift", "0.415", "Lift Power", true, true, 0, true, 1, true).bindTo(liftmag);
 
-	dragp = make_shared<float>(0.1);
-	cvarManager->registerCvar("flight_drag", "0.1", "You flyin thru mud", true, true, 0, true, 1).bindTo(dragp);
+	dragmag = make_shared<float>();
+	cvarManager->registerCvar("flight_drag", "0.1", "You flyin thru mud", true, true, 0, true, 10).bindTo(dragmag);
 
 	cmdManager.cvarManager = this->cvarManager;
 	cmdManager.gameWrapper = this->gameWrapper;
+
+	liftmag = make_shared<float>();
 
 	cmdManager.addCommands();
 
@@ -88,14 +90,42 @@ void flightplugin::OnSetInput()
 
 
 	// Lift 
-	/* float lift = (*liftp) * lonSpeed;
-	Vector liftd = { 0, 0, lift };
-	Vector lifted = (lin, up) * lift;
-	car.AddVelocity(liftd);
-	*/
+	float lifty = (*liftmag) * lonSpeed;
+	Vector lift = (lin, up) * lifty;
+	car.AddForce(lift, 1);
 
-	// Drag
-	/*	float drag = ((*dragp * lonSpeed) * -1);
-		Vector dragp = {0, 0, drag};
-		car.AddVelocity(dragp); */
+	// Drag - Value is linear right now, maybe magnify it based on attitude in the future
+	float dragy = (*dragmag * lin.magnitude);
+	Vector drag = (dragy);
+	car.AddVelocity(drag);
+}
+void flightplugin::drawStringAt(CanvasWrapper cw, std::string text, int x, int y, Color col)
+{
+	cw.SetPosition({ x, y });
+	cw.SetColor(col.r, col.g, col.b, col.a);
+	cw.DrawString(text);
+}
+void flightplugin::crayons(CanvasWrapper cw, int x, int y)
+{
+	int marginLeft = 20;
+	int marginTop = 20;
+	int titleSpacing = 120;
+	int nameSpacing = 130;
+	int vecSpacing = 70;
+	int quatSpacing = 120;
+	int lineSpacing = 30;
+	cw.SetPosition({ x, y });
+	cw.SetColor(COLOR_PANEL);
+	cw.FillBox({ 360, 350 });
+	cw.SetColor(COLOR_TEXT);
+	cw.SetColor(205, 155, 15, 255);
+	this->drawStringAt(cw, "Instrument Panel", x + titleSpacing, y + marginTop);
+	int currentLine = marginTop + 20;
+	cw.SetColor(255, 255, 255, 255);
+	currentLine += lineSpacing;
+	this->drawStringAt(cw, "Liftmag", x + marginLeft, y + currentLine);
+	this->drawStringAt(cw, sp::to_string(*liftmag, 5), x + marginLeft + nameSpacing, y + currentLine);
+	currentLine += lineSpacing;
+	this->drawStringAt(cw, "Dragmag", x + marginLeft, y + currentLine);
+	this->drawStringAt(cw, sp::to_string(*dragmag, 5), x + marginLeft + nameSpacing, y + currentLine);
 }
