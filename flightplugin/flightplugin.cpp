@@ -94,7 +94,7 @@ void flightplugin::OnSetInput()
 	Vector lift = (lin, up) * lifty;
 	car.AddForce(lift, 1);
 
-	// Drag - Value is linear right now, maybe magnify it based on attitude in the future
+	// Drag - Value is linear right now, maybe magnify it based on angle of attack in the future
 	float dragy = (*dragmag * lin.magnitude);
 	Vector drag = (dragy);
 	car.AddVelocity(drag);
