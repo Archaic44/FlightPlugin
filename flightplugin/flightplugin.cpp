@@ -27,8 +27,8 @@ void flightplugin::onLoad()
 {
 	gameWrapper->HookEvent("Function TAGame.Car_TA.SetVehicleInput", bind(&flightplugin::OnSetInput, this));
 
-	liftp = make_shared<float>(0.0385);
-	cvarManager->registerCvar("flight_lift", "0.0025", "Lift Power", true, true, 0, true, 1, true).bindTo(liftp);
+	liftp = make_shared<float>(0.001);
+	cvarManager->registerCvar("flight_lift", "0.0001", "Lift Power", true, true, 0, true, 1, true).bindTo(liftp);
 
 	dragp = make_shared<float>(0.1);
 	cvarManager->registerCvar("flight_drag", "0.1", "You flyin thru mud", true, true, 0, true, 1).bindTo(dragp);
@@ -61,13 +61,13 @@ void flightplugin::onUnLoad()
 	return;
 }
 Vector flightplugin::reflect_v1_on_v2(Vector v1, Vector v2)
-{
+{ // take from: https://en.wikipedia.org/wiki/Specular_reflection
 	Vector incident = v1.clone();
 	Vector norm = v2.clone();
 	Vector i_unit = incident.normalize();
 	Vector n_unit = norm.normalize();
 	float norm_dot = Vector::dot(i_unit, n_unit);
-	if (norm_dot < 0) 
+	if (norm_dot < 0) // Change the surface normal direction since car's velcotiy is hitting bottom/left/back face of car
 	{
 		n_unit = n_unit*-1;
 	}
@@ -75,7 +75,7 @@ Vector flightplugin::reflect_v1_on_v2(Vector v1, Vector v2)
 	dot *= 2;
 	Vector change = norm * dot;
 	Vector reflect = change - incident; // The specularly reflected air direction
-	return reflect*-1; // Car moves in opposite direction of air
+	return reflect; // Car moves in opposite direction of air
 }
 void flightplugin::OnSetInput()
 {
