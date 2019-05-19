@@ -27,8 +27,9 @@ void flightplugin::onLoad()
 {
 	gameWrapper->HookEvent("Function TAGame.Car_TA.SetVehicleInput", bind(&flightplugin::OnSetInput, this));
 
-	liftp = make_shared<float>(0.001);
-	cvarManager->registerCvar("flight_lift", "0.0001", "Lift Power", true, true, 0, true, 1, true).bindTo(liftp);
+
+	liftp = make_shared<float>(0.0385);
+	cvarManager->registerCvar("flight_lift", "0.0025", "Lift Power", true, true, 0, true, 1, true).bindTo(liftp);
 
 	dragp = make_shared<float>(0.1);
 	cvarManager->registerCvar("flight_drag", "0.1", "You flyin thru mud", true, true, 0, true, 1).bindTo(dragp);
@@ -89,26 +90,31 @@ void flightplugin::OnSetInput()
 	RBState rbstate = car.GetRBState();
 
 	Vector loc = rbstate.Location;
-	Vector lin = rbstate.LinearVelocity; // Car velocity with respect to world
-	float speed = lin.magnitude();
-	if (speed > 200) {
-		Quat quat = rbstate.Quaternion;
-		// The following vectors describe the basis of the car (the 3 sides of the car)
-		Vector up = quatToUp(quat);  // Car's Up direction relative to world's xyz
-		Vector right = quatToRight(quat); // Car's Right vector relative to world's xyz
-		Vector fwd = quatToFwd(quat); // Car's forward vector relative to world's xyz
+	Vector lin = rbstate.LinearVelocity;
+	Quat quat = rbstate.Quaternion;
+	Vector ang = rbstate.AngularVelocity;
+	auto horVel = Vector(lin.X, lin.Y, 0);
+	Vector up = quatToUp(quat);
+	Vector right = quatToRight(quat);
+	Vector fwd = quatToFwd(quat);
+	auto linLocalFwd = Vector::dot(lin, fwd);
+	auto linLocalRight = Vector::dot(lin, right);
+	auto linLocalUp = Vector::dot(lin, up);
+	Vector linLocal = Vector(linLocalFwd, linLocalRight, linLocalUp);
+	auto lonSpeed = Vector::dot(horVel, fwd);
+	auto latSpeed = Vector::dot(horVel, right);
 
-		// Linear Translation
-		Vector deflect_up = reflect_v1_on_v2(lin, up); // Simulate air bouncing off car roof/bottom
-		Vector deflect_right = reflect_v1_on_v2(lin, right); // Simulate air bouncing off car left/right
-		Vector deflect_fwd = reflect_v1_on_v2(lin, fwd); // Simulate air bouncing off car front/back
-		cvarManager->log("Right: " + sp::vector_to_string(deflect_right));
-		cvarManager->log("Up: " + sp::vector_to_string(deflect_up));
-		cvarManager->log("Fwd: " + sp::vector_to_string(deflect_fwd));
 
-		float coef = speed * (*liftp); // Apply reduction in speed
-		car.AddVelocity(deflect_up * coef);
-		car.AddVelocity(deflect_right * coef);
-		car.AddVelocity(deflect_fwd * coef);
-	}
+
+	// Lift 
+	/* float lift = (*liftp) * lonSpeed;
+	Vector liftd = { 0, 0, lift };
+	Vector lifted = (lin, up) * lift;
+	car.AddVelocity(liftd);
+	*/
+
+	// Drag
+	/*	float drag = ((*dragp * lonSpeed) * -1);
+		Vector dragp = {0, 0, drag};
+		car.AddVelocity(dragp); */
 }
