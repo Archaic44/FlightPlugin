@@ -64,13 +64,18 @@ Vector flightplugin::reflect_v1_on_v2(Vector v1, Vector v2)
 {
 	Vector incident = v1.clone();
 	Vector norm = v2.clone();
-	Vector dot = Vector::dot(incident, norm);
-	auto twodot = dot * 2;
-	float x = twodot.X * norm.X + twodot.X * norm.Y + twodot.X * norm.Z;
-	float y = twodot.Y * norm.X + twodot.Y * norm.Y + twodot.Y * norm.Z;
-	float z = twodot.Z * norm.X + twodot.Z * norm.Y + twodot.Z * norm.Z;
-	Vector reflect = Vector(x, y, z) - incident;
-	return reflect*-1;
+	Vector i_unit = incident.normalize();
+	Vector n_unit = norm.normalize();
+	float norm_dot = Vector::dot(i_unit, n_unit);
+	if (norm_dot < 0) 
+	{
+		n_unit = n_unit*-1;
+	}
+	float dot = Vector::dot(i_unit, n_unit);
+	dot *= 2;
+	Vector change = norm * dot;
+	Vector reflect = change - incident; // The specularly reflected air direction
+	return reflect*-1; // Car moves in opposite direction of air
 }
 void flightplugin::OnSetInput()
 {
@@ -79,30 +84,31 @@ void flightplugin::OnSetInput()
 		return;
 	}
 
-/* definitions */
+	/* definitions */
 	auto car = gameWrapper->GetGameEventAsServer().GetGameCar();
 	RBState rbstate = car.GetRBState();
 
 	Vector loc = rbstate.Location;
 	Vector lin = rbstate.LinearVelocity; // Car velocity with respect to world
-	if (lin.magnitude() > 100) { // Skip flight calculations if velocity is small
+	float speed = lin.magnitude();
+	if (speed > 200) {
 		Quat quat = rbstate.Quaternion;
 		// The following vectors describe the basis of the car (the 3 sides of the car)
 		Vector up = quatToUp(quat);  // Car's Up direction relative to world's xyz
 		Vector right = quatToRight(quat); // Car's Right vector relative to world's xyz
 		Vector fwd = quatToFwd(quat); // Car's forward vector relative to world's xyz
-		
-		// Linear Translation
-		Vector air = lin*-1; // Still air being pushed into car
-		Vector deflect_up = reflect_v1_on_v2(air, up); // Simulate air bouncing off car roof/bottom
-		Vector deflect_right = reflect_v1_on_v2(air, right); // Simulate air bouncing off car left/right
-		Vector deflect_fwd = reflect_v1_on_v2(air, fwd); // Simulate air bouncing off car front/back
-		cvarManager->log(sp::vector_to_string(deflect_right));
-		cvarManager->log(sp::vector_to_string(deflect_up));
-		cvarManager->log(sp::vector_to_string(deflect_fwd));
 
-		car.AddVelocity(deflect_up*.1);
-		car.AddVelocity(deflect_right*.1);
-		car.AddVelocity(deflect_fwd*.1);
+		// Linear Translation
+		Vector deflect_up = reflect_v1_on_v2(lin, up); // Simulate air bouncing off car roof/bottom
+		Vector deflect_right = reflect_v1_on_v2(lin, right); // Simulate air bouncing off car left/right
+		Vector deflect_fwd = reflect_v1_on_v2(lin, fwd); // Simulate air bouncing off car front/back
+		cvarManager->log("Right: " + sp::vector_to_string(deflect_right));
+		cvarManager->log("Up: " + sp::vector_to_string(deflect_up));
+		cvarManager->log("Fwd: " + sp::vector_to_string(deflect_fwd));
+
+		float coef = speed * (*liftp); // Apply reduction in speed
+		car.AddVelocity(deflect_up * coef);
+		car.AddVelocity(deflect_right * coef);
+		car.AddVelocity(deflect_fwd * coef);
 	}
 }
