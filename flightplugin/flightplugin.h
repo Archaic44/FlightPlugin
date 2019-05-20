@@ -21,9 +21,10 @@ private:
 	Logger logger;
 	CommandsManager cmdManager;
 	Painter painter;
-//	RBState oldCarRBState;
-//	std::chrono::time_point<std::chrono::steady_clock> last_time;
-//	std::chrono::time_point<std::chrono::steady_clock> start_time;
+	RBState oldCarRBState;
+	std::chrono::time_point<std::chrono::steady_clock> last_time;
+	std::chrono::time_point<std::chrono::steady_clock> start_time;
+
 
 public:
 	std::shared_ptr<float> flight_drag, dragp;
