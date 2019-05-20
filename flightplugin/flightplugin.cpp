@@ -28,15 +28,13 @@ void flightplugin::onLoad()
 	gameWrapper->HookEvent("Function TAGame.Car_TA.SetVehicleInput", bind(&flightplugin::OnSetInput, this));
 
 	liftmag = make_shared<float>();
-	cvarManager->registerCvar("flight_lift", "0.415", "Lift Power", true, true, 0, true, 1, true).bindTo(liftmag);
+	cvarManager->registerCvar("flight_lift", "4", "Lift Power", true, true, 0, true, 10, true).bindTo(liftmag);
 
 	dragmag = make_shared<float>();
-	cvarManager->registerCvar("flight_drag", "0.1", "You flyin thru mud", true, true, 0, true, 10).bindTo(dragmag);
+	cvarManager->registerCvar("flight_drag", "(1)", "You flyin thru mud", true, true, 0, true, 10).bindTo(dragmag);
 
 	cmdManager.cvarManager = this->cvarManager;
 	cmdManager.gameWrapper = this->gameWrapper;
-
-	liftmag = make_shared<float>();
 
 	cmdManager.addCommands();
 
@@ -53,9 +51,10 @@ void flightplugin::onLoad()
 		}
 		this->flight_enabled = true;
 		this->OnSetInput();
-		cvarManager->log("Get that air!");
+		cvarManager->log("Time to fly!");
 		}, "Starts the Flight mode.", PERMISSION_FREEPLAY);
 }
+
 void flightplugin::onUnLoad()
 {
 	flight_enabled = false;
@@ -63,12 +62,12 @@ void flightplugin::onUnLoad()
 }
 void flightplugin::OnSetInput()
 {
-	if (flight_enabled == false) //stops the plugin if flight_enabled isnt true
+	if (flight_enabled == false) //stops the plugin if flight_enabled is false
 	{
 		return;
 	}
 
-/* definitions */
+	/* definitions */
 	auto car = gameWrapper->GetGameEventAsServer().GetGameCar();
 	RBState rbstate = car.GetRBState();
 
@@ -87,45 +86,12 @@ void flightplugin::OnSetInput()
 	auto lonSpeed = Vector::dot(horVel, fwd);
 	auto latSpeed = Vector::dot(horVel, right);
 
-
-
 	// Lift 
 	float lifty = (*liftmag) * lonSpeed;
 	Vector lift = (lin, up) * lifty;
 	car.AddForce(lift, 1);
 
 	// Drag - Value is linear right now, maybe magnify it based on angle of attack in the future
-	float dragy = (*dragmag * lin.magnitude);
-	Vector drag = (dragy);
-	car.AddVelocity(drag);
-}
-void flightplugin::drawStringAt(CanvasWrapper cw, std::string text, int x, int y, Color col)
-{
-	cw.SetPosition({ x, y });
-	cw.SetColor(col.r, col.g, col.b, col.a);
-	cw.DrawString(text);
-}
-void flightplugin::crayons(CanvasWrapper cw, int x, int y)
-{
-	int marginLeft = 20;
-	int marginTop = 20;
-	int titleSpacing = 120;
-	int nameSpacing = 130;
-	int vecSpacing = 70;
-	int quatSpacing = 120;
-	int lineSpacing = 30;
-	cw.SetPosition({ x, y });
-	cw.SetColor(COLOR_PANEL);
-	cw.FillBox({ 360, 350 });
-	cw.SetColor(COLOR_TEXT);
-	cw.SetColor(205, 155, 15, 255);
-	this->drawStringAt(cw, "Instrument Panel", x + titleSpacing, y + marginTop);
-	int currentLine = marginTop + 20;
-	cw.SetColor(255, 255, 255, 255);
-	currentLine += lineSpacing;
-	this->drawStringAt(cw, "Liftmag", x + marginLeft, y + currentLine);
-	this->drawStringAt(cw, sp::to_string(*liftmag, 5), x + marginLeft + nameSpacing, y + currentLine);
-	currentLine += lineSpacing;
-	this->drawStringAt(cw, "Dragmag", x + marginLeft, y + currentLine);
-	this->drawStringAt(cw, sp::to_string(*dragmag, 5), x + marginLeft + nameSpacing, y + currentLine);
+	Vector drag = (rbstate.LinearVelocity * (*dragmag * (-1.0f)));
+	car.AddForce(drag, 1);
 }
