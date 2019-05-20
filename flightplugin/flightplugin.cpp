@@ -26,9 +26,8 @@ using namespace sp;
 void flightplugin::onLoad()
 {
 	gameWrapper->HookEvent("Function TAGame.Car_TA.SetVehicleInput", bind(&flightplugin::OnSetInput, this));
-
-	liftp = make_shared<float>(0.001);
-	cvarManager->registerCvar("flight_lift", "0.0001", "Lift Power", true, true, 0, true, 1, true).bindTo(liftp);
+	liftp = make_shared<float>(.0000003);
+	cvarManager->registerCvar("flight_lift", ".0000003", "Lift Power", true, true, 0, true, 1, true).bindTo(liftp);
 
 	dragp = make_shared<float>(0.1);
 	cvarManager->registerCvar("flight_drag", "0.1", "You flyin thru mud", true, true, 0, true, 1).bindTo(dragp);
@@ -107,8 +106,12 @@ void flightplugin::OnSetInput()
 		cvarManager->log("Fwd: " + sp::vector_to_string(deflect_fwd));
 
 		float coef = speed * (*liftp); // Apply reduction in speed
-		car.AddVelocity(deflect_up * coef);
-		car.AddVelocity(deflect_right * coef);
-		car.AddVelocity(deflect_fwd * coef);
+		Vector extent = car.GetLocalCollisionExtent();
+		float roof_area = extent.X * extent.Y * coef;
+		float door_area = extent.X * extent.Z * coef;
+		float bumper_area = extent.Y * extent.Z * coef;
+		car.AddVelocity(deflect_up * roof_area);
+		car.AddVelocity(deflect_right * door_area);
+		car.AddVelocity(deflect_fwd * bumper_area);
 	}
 }
