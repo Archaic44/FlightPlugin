@@ -28,10 +28,10 @@ void flightplugin::onLoad()
 	gameWrapper->HookEvent("Function TAGame.Car_TA.SetVehicleInput", bind(&flightplugin::OnSetInput, this));
 
 	liftmag = make_shared<float>();
-	cvarManager->registerCvar("flight_lift", "4", "Lift Power", true, true, 0, true, 10, true).bindTo(liftmag);
+	cvarManager->registerCvar("flight_lift", "4", "Lift Power", true, true, 0, true, 10, false).bindTo(liftmag);
 
 	dragmag = make_shared<float>();
-	cvarManager->registerCvar("flight_drag", "(1)", "You flyin thru mud", true, true, 0, true, 10).bindTo(dragmag);
+	cvarManager->registerCvar("flight_drag", "1", "You flyin thru mud", true, true, 0, true, 10, false).bindTo(dragmag);
 
 	cmdManager.cvarManager = this->cvarManager;
 	cmdManager.gameWrapper = this->gameWrapper;
