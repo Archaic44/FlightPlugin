@@ -26,8 +26,8 @@ using namespace sp;
 void flightplugin::onLoad()
 {
 	gameWrapper->HookEvent("Function TAGame.Car_TA.SetVehicleInput", bind(&flightplugin::OnSetInput, this));
-	liftp = make_shared<float>(.0000003);
-	cvarManager->registerCvar("flight_lift", ".0000003", "Lift Power", true, true, 0, true, 1, true).bindTo(liftp);
+	liftp = make_shared<float>(.003);
+	cvarManager->registerCvar("flight_lift", ".003", "Lift Power", true, true, 0, true, 1, true).bindTo(liftp);
 
 	dragp = make_shared<float>(0.1);
 	cvarManager->registerCvar("flight_drag", "0.1", "You flyin thru mud", true, true, 0, true, 1).bindTo(dragp);
@@ -90,7 +90,6 @@ void flightplugin::OnSetInput()
 	Vector loc = rbstate.Location;
 	Vector lin = rbstate.LinearVelocity; // Car velocity with respect to world
 	float speed = lin.magnitude();
-	if (speed > 200) {
 		Quat quat = rbstate.Quaternion;
 		// The following vectors describe the basis of the car (the 3 sides of the car)
 		Vector up = quatToUp(quat);  // Car's Up direction relative to world's xyz
@@ -107,11 +106,14 @@ void flightplugin::OnSetInput()
 
 		float coef = speed * (*liftp); // Apply reduction in speed
 		Vector extent = car.GetLocalCollisionExtent();
-		float roof_area = extent.X * extent.Y * coef;
-		float door_area = extent.X * extent.Z * coef;
-		float bumper_area = extent.Y * extent.Z * coef;
-		car.AddVelocity(deflect_up * roof_area);
-		car.AddVelocity(deflect_right * door_area);
-		car.AddVelocity(deflect_fwd * bumper_area);
-	}
+		float roof_area = extent.X * extent.Y;
+		float door_area = extent.X * extent.Z;
+		float bumper_area = extent.Y * extent.Z;
+		float total_area = roof_area + door_area + bumper_area;
+		float roof = roof_area / total_area;
+		float door = door_area / total_area;
+		float bumper = bumper_area / total_area;
+		car.AddVelocity(deflect_up * (roof * coef));
+		car.AddVelocity(deflect_right * (door * coef));
+		car.AddVelocity(deflect_fwd * (bumper * coef));
 }
