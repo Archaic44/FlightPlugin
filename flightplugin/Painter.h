@@ -49,10 +49,7 @@ private:
 	void drawCarDerivedInfo(CanvasWrapper cw, CarWrapper car, int x, int y);
 	void drawYawPlane(CanvasWrapper cw, CarWrapper car, int x, int y, float scale);
 	void drawInputPanel(CanvasWrapper cw, CarWrapper car, int x, int y);
-	void drawVector(CanvasWrapper canvas, Vector vec);
 	Vector Rotate(Vector aVec, double roll, double yaw, double pitch);
-	std::vector<Vector> arrow;
-	std::shared_ptr<int> carType;
 
 
 public:
