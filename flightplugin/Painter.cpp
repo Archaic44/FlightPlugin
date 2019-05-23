@@ -4,8 +4,6 @@
 #include "bakkesmod\wrappers\arraywrapper.h"
 #include "bakkesmod\wrappers\wrapperstructs.h"
 #include "Painter.h"
-#include "CarManager.h"
-#include "Arrow.h"
 #include "HelperFunctions.h"
 #include "flightplugin.h"
 
@@ -130,51 +128,8 @@ void Painter::drawCarDerivedInfo(CanvasWrapper cw, CarWrapper car, int x, int y)
 	this->drawStringAt(cw, sp::vector_to_string(ang, 5), x + marginLeft + nameSpacing, y + currentLine);
 }
 
-void Painter::drawVector(CanvasWrapper canvas, Vector vec)
-{
-	if (gameWrapper->IsInGame()) // TODO: readd flight_enabled if necessary
-	{
-		ServerWrapper game = gameWrapper->GetGameEventAsServer();
-
-		if (game.IsNull())
-			return;
-		ArrayWrapper<CarWrapper> cars = game.GetCars();
-
-		if (cars.Count() > 0) {
-			CarWrapper car = cars.Get(0);
-			if (car.IsNull())
-				return;
-
-			if (arrow.size() == 0) { // arrow on car
-				arrow = CarManager::getArrowPoints(static_cast<CARBODY>(*carType), *gameWrapper);
-			}
-			canvas.SetColor(255, 255, 0, 200);
-
-			Vector v = car.GetLocation();
-			Rotator r = car.GetRotation();
-
-			double dPitch = (double)r.Pitch / 32764.0 * 3.14159;
-			double dYaw = (double)r.Yaw / 32764.0 * 3.14159;
-			double dRoll = (double)r.Roll / 32764.0 * 3.14159;
-
-			Vector2 carLocation2D = canvas.Project(v);
-			Vector2 arrow2D[2];
-			for (int i = 0; i < 2; i++) {
-				arrow2D[i] = canvas.Project(Rotate(arrow[i], dRoll, -dYaw, dPitch) + v); 
-			}
-
-			canvas.DrawLine(arrow2D[0], arrow2D[1]); // Actually draws the arrow from point 0 to 1.
-
-			canvas.SetPosition(carLocation2D.minus({ 10,10 }));
-			canvas.FillBox({ 20, 20 });
-			return;
-		}
-	}
-}
-
 Vector Painter::Rotate(Vector aVec, double roll, double yaw, double pitch)
 {
-
 	float sx = sin(roll);
 	float cx = cos(roll);
 	float sy = sin(yaw);
