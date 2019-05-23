@@ -12,8 +12,6 @@
 #include "Logger.h"
 #include "CommandsManager.h"
 #include "Painter.h"
-#include "Arrow.h"
-#include "CarManager.h"
 
 class flightplugin : public BakkesMod::Plugin::BakkesModPlugin
 {
@@ -27,8 +25,10 @@ private:
 
 
 public:
-	std::shared_ptr<float> flight_drag, dragp;
-	std::shared_ptr<float> flight_lift, liftp;
+	std::shared_ptr<float> air_density, rho;
+	std::shared_ptr<float> car_width, width;
+	std::shared_ptr<float> car_height, height;
+	std::shared_ptr<float> car_length, length;
 	bool flight_enabled = false;
 	virtual void onLoad();
 	virtual void onUnLoad();
