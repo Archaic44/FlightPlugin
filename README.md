@@ -7,7 +7,7 @@ After installing BakkesMod and Rocket League, place the flightplugin.dll and fli
 - \Program Files (x86)\Steam\steamapps\common\rocketleague\Binaries\Win32\bakkesmod\plugins
 - \Program Files (x86)\Steam\steamapps\common\rocketleague\Binaries\Win32\bakkesmod\plugins\settings
 
-## Using Fl2ightPlugin
+## Using FlightPlugin
 In game, open the BakkesMod GUI with `F2`. On the far right tab, `Plugins`, click on `Flight Plugin` in the side bar.
 
-With flightplugin selected, load the plugin and enable it with the `Load Plugin` and `Enable Flight` buttons respectively. Play with the sliders at your own risk!
+With `Flight Plugin` selected, load the plugin and enable it with the `Load Plugin` and `Enable Flight` buttons respectively. Play with the sliders at your own risk!
