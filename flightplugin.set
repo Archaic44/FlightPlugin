@@ -1,0 +1,40 @@
+Flight Plugin
+9|Lift is generated based on your speed relative to the direction your car is facing.
+0|Load Plugin|plugin load flightplugin
+7
+0|Unload Plugin|plugin unload flightplugin
+7
+0|Enable Flight|flight_enabled 1
+7
+0|Disable Flight|flight_enabled 0
+4|Air Density|air_density|0|1
+7
+0|Reset|air_density 0
+4|Car Length|car_length|0|10
+7
+0|Reset|car_length 1
+4|Car Width|car_width|0|10
+7
+0|Reset|car_width 1
+4|Car Height|car_height|0|10
+7
+0|Reset|car_height 1
+4|Scale X Force|res_x|0|10
+7
+0|Reset|res_x 1
+4|Scale Y Force|res_y|0|10
+7
+0|Reset|res_y 1
+4|Scale Z Force|res_z|0|10
+7
+0|Reset|res_z 1
+4|Scales Pitch Stabilization|stabilize_pitch|0|10
+7
+0|Reset|stabilize_pitch 1
+4|Scales Roll Stabilization|stabilize_roll|0|10
+7
+0|Reset|stabilize_roll 1
+4|Scales Yaw Stabilization|stabilize_yaw|0|10
+7
+0|Reset|stabilize_yaw 1
+9|This plugin was authored by Digby Deathstar and jsonV
