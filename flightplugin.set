@@ -37,4 +37,13 @@ Flight Plugin
 4|Scales Yaw Stabilization|stabilize_yaw|0|10
 7
 0|Reset|stabilize_yaw 1
+4|Scales Fwd/Backwards Lift|lift_fwd|0|10
+7
+0|Reset|lift_fwd 1
+4|Scales Up/Down Lift|lift_up|0|10
+7
+0|Reset|lift_up 1
+4|Scales Left/Right Lift|lift_right|0|10
+7
+0|Reset|lift_right 1
 9|This plugin was authored by Digby Deathstar and jsonV

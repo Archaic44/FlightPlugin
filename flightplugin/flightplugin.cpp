@@ -197,7 +197,13 @@ void flightplugin::OnSetInput(CarWrapper cw, void * params, string funcName)
 		car.SetAngularVelocity(tau,true);
 
 		/* Begin Lift Calculation*/
-		Vector lift = Vector(0, 0, 0);
+		Vector fwd_lift = fwd * (*fwd_scalar) * flux_f * -1;
+		Vector up_lift = up * (*up_scalar)  * flux_u * -1;
+		Vector right_lift = right * (*right_scalar) * flux_r * -1;
+		cvarManager->log("RLIFT: " + sp::vector_to_string(right_lift, 5));
+		cvarManager->log("ULIFT: " + sp::vector_to_string(up_lift, 5));
+		cvarManager->log("FLIFT: " + sp::vector_to_string(fwd_lift, 5));
+		Vector lift = fwd_lift + up_lift + right_lift;
 		car.AddVelocity(lift);
 	}
 }
