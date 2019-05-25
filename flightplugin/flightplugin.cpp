@@ -203,7 +203,11 @@ void flightplugin::OnSetInput(CarWrapper cw, void * params, string funcName)
 		cvarManager->log("RLIFT: " + sp::vector_to_string(right_lift, 5));
 		cvarManager->log("ULIFT: " + sp::vector_to_string(up_lift, 5));
 		cvarManager->log("FLIFT: " + sp::vector_to_string(fwd_lift, 5));
+		Vector testup = rotateVectorWithQuat(Vector(.1, 0, 1), quat);
+
+	
 		Vector lift = fwd_lift + up_lift + right_lift;
+		cvarManager->log("LIFT: " + sp::vector_to_string(lift, 5));
 		car.AddVelocity(lift);
 	}
 }
