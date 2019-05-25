@@ -22,17 +22,21 @@ private:
 	RBState oldCarRBState;
 	std::chrono::time_point<std::chrono::steady_clock> last_time;
 	std::chrono::time_point<std::chrono::steady_clock> start_time;
-
-
-public:
 	std::shared_ptr<float> air_density, rho;
 	std::shared_ptr<float> car_width, width;
 	std::shared_ptr<float> car_height, height;
 	std::shared_ptr<float> car_length, length;
-	bool flight_enabled = false;
+	shared_ptr<bool> enabled;
+
+public:
 	virtual void onLoad();
-	virtual void onUnLoad();
+	virtual void onUnload();
+
+	void OnSetInput(CarWrapper cw, void* params, string funcName);
+	void OnFreeplayLoad(std::string eventName);
+	void OnFreeplayDestroy(std::string eventName);
+	void OnEnabledChanged(std::string oldValue, CVarWrapper cvar);
 	Vector reflect_v1_on_v2(Vector v1, Vector v2);
-	void OnSetInput();
+
 	ofstream dump_file;
 };
