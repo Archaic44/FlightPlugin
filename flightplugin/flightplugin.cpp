@@ -31,6 +31,10 @@ void flightplugin::onLoad()
 	length = make_shared<float>(1.f);
 	width = make_shared<float>(1.f);
 	height = make_shared<float>(1.f);
+	x_scalar = make_shared<float>(1.f);
+	y_scalar = make_shared<float>(1.f);
+	z_scalar = make_shared<float>(1.f);
+
 
 	gameWrapper->HookEvent("Function TAGame.GameEvent_Tutorial_TA.OnInit", bind(&flightplugin::OnFreeplayLoad, this, std::placeholders::_1));
 	gameWrapper->HookEvent("Function TAGame.GameEvent_Tutorial_TA.Destroyed", bind(&flightplugin::OnFreeplayDestroy, this, std::placeholders::_1));
@@ -42,6 +46,11 @@ void flightplugin::onLoad()
 	cvarManager->registerCvar("car_length", "1", "Car Length", true, true, 0.f, true, 10.f, true).bindTo(length);
 	cvarManager->registerCvar("car_width", "1", "Car Width", true, true, 0.f, true, 10.f, true).bindTo(width);
 	cvarManager->registerCvar("car_height", "1", "Car Height", true, true, 0.f, true, 10.f, true).bindTo(height);
+	cvarManager->registerCvar("car_height", "1", "Car Height", true, true, 0.f, true, 10.f, true).bindTo(height);
+	cvarManager->registerCvar("car_height", "1", "Car Height", true, true, 0.f, true, 10.f, true).bindTo(height);
+	cvarManager->registerCvar("res_x", "1", "Scales Resultant.X", true, true, 0.f, true, 10.f, true).bindTo(x_scalar);
+	cvarManager->registerCvar("res_y", "1", "Scales Resultant.Y", true, true, 0.f, true, 10.f, true).bindTo(y_scalar);
+	cvarManager->registerCvar("res_z", "1", "Scales Resultant.Z", true, true, 0.f, true, 10.f, true).bindTo(z_scalar);
 
 	logger.cvarManager = this->cvarManager;
 	cmdManager.cvarManager = this->cvarManager;
@@ -127,6 +136,8 @@ void flightplugin::OnSetInput(CarWrapper cw, void * params, string funcName)
 		cvarManager->log("True speed: " + sp::to_string(speed, 4));
 		cvarManager->log("Air density: "+sp::to_string(coef, 5));
 		cvarManager->log("L/W/H: " + sp::to_string(*length, 5) + "," + sp::to_string(*width, 5)+ "," + sp::to_string(*height,5));
+		cvarManager->log("X/Y/Z Scaled: " + sp::to_string(*x_scalar, 5) + "," + sp::to_string(*y_scalar, 5) + "," + sp::to_string(*z_scalar, 5));
+
 		Vector extent = car.GetLocalCollisionExtent();
 
 		// Flux calculation
@@ -154,6 +165,12 @@ void flightplugin::OnSetInput(CarWrapper cw, void * params, string funcName)
 		cvarManager->log("Uscaled: " + sp::vector_to_string(res_up, 5));
 		cvarManager->log("Fscaled: " + sp::vector_to_string(res_fwd, 5));
 		cvarManager->log("Result: " + sp::vector_to_string(result, 5));
-		car.AddVelocity(result*1.f);
+		float scaleX = (*x_scalar);
+		float scaleY = (*y_scalar);
+		float scaleZ = (*z_scalar);
+		result.X *= scaleX;
+		result.Y *= scaleY;
+		result.Z *= scaleZ;
+		car.AddVelocity(result);
 	}
 }
