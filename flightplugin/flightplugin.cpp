@@ -169,7 +169,7 @@ void flightplugin::OnSetInput(CarWrapper cw, void * params, string funcName)
 		float flux_r = Vector::dot(deflect_right.norm(), right) * door;
 		float flux_u = Vector::dot(deflect_up.norm(), up) * roof;
 		float flux_f = Vector::dot(deflect_fwd.norm(), fwd) * bumper;
-		cvarManager->log(sp::to_string(flux_r, 5) + "   " + sp::to_string(flux_u, 5) + "   " + sp::to_string(flux_f, 5));
+		cvarManager->log("FLUX: "+sp::to_string(flux_r, 5) + "   " + sp::to_string(flux_u, 5) + "   " + sp::to_string(flux_f, 5));
 
 		// Modify resultant vector by flux
 		res_right = res_right * abs(flux_r *coef);
@@ -197,16 +197,16 @@ void flightplugin::OnSetInput(CarWrapper cw, void * params, string funcName)
 		car.SetAngularVelocity(tau,true);
 
 		/* Begin Lift Calculation*/
-		Vector fwd_lift = fwd * (*fwd_scalar) * flux_f * -1;
-		Vector up_lift = up * (*up_scalar)  * flux_u * -1;
-		Vector right_lift = right * (*right_scalar) * flux_r * -1;
+		Vector fwd_lift = fwd * (*fwd_scalar) * flux_f * -1 * speed;
+		Vector up_lift = up * (*up_scalar)  * flux_u * -1 * speed;
+		up_lift = up_lift + (up * (*up_scalar) * flux_f) * 2 * speed;
+		Vector right_lift = right * (*right_scalar) * flux_r * -1 * speed;
 		cvarManager->log("RLIFT: " + sp::vector_to_string(right_lift, 5));
 		cvarManager->log("ULIFT: " + sp::vector_to_string(up_lift, 5));
 		cvarManager->log("FLIFT: " + sp::vector_to_string(fwd_lift, 5));
-		Vector testup = rotateVectorWithQuat(Vector(.1, 0, 1), quat);
 
 	
-		Vector lift = fwd_lift + up_lift + right_lift;
+		Vector lift = (fwd_lift + up_lift + right_lift)/100;
 		cvarManager->log("LIFT: " + sp::vector_to_string(lift, 5));
 		car.AddVelocity(lift);
 	}

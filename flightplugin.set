@@ -9,41 +9,41 @@ Flight Plugin
 0|Disable Flight|flight_enabled 0
 4|Air Density|air_density|0|1
 7
-0|Reset|air_density 0
+0|Reset##a|air_density 0
 4|Car Length|car_length|0|10
 7
-0|Reset|car_length 1
+0|Reset##b|car_length 1
 4|Car Width|car_width|0|10
 7
-0|Reset|car_width 1
+0|Reset##c|car_width 1
 4|Car Height|car_height|0|10
 7
-0|Reset|car_height 1
-4|Scale X Force|res_x|0|10
+0|Reset##d|car_height 1
+4|Scale X Drag|res_x|0|10
 7
-0|Reset|res_x 1
-4|Scale Y Force|res_y|0|10
+0|Reset##e|res_x 1
+4|Scale Y Drag|res_y|0|10
 7
-0|Reset|res_y 1
-4|Scale Z Force|res_z|0|10
+0|Reset##f|res_y 1
+4|Scale Z Drag|res_z|0|10
 7
-0|Reset|res_z 1
+0|Reset##g|res_z 1
 4|Scales Pitch Stabilization|stabilize_pitch|0|10
 7
-0|Reset|stabilize_pitch 1
+0|Reset##h|stabilize_pitch 0
 4|Scales Roll Stabilization|stabilize_roll|0|10
 7
-0|Reset|stabilize_roll 1
+0|Reset##i|stabilize_roll 0
 4|Scales Yaw Stabilization|stabilize_yaw|0|10
 7
-0|Reset|stabilize_yaw 1
+0|Reset##j|stabilize_yaw 0
 4|Scales Fwd/Backwards Lift|lift_fwd|0|10
 7
-0|Reset|lift_fwd 1
+0|Reset##k|lift_fwd 0
 4|Scales Up/Down Lift|lift_up|0|10
 7
-0|Reset|lift_up 1
+0|Reset##l|lift_up 0
 4|Scales Left/Right Lift|lift_right|0|10
 7
-0|Reset|lift_right 1
+0|Reset##m|lift_right 0
 9|This plugin was authored by Digby Deathstar and jsonV
