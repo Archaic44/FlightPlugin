@@ -34,7 +34,10 @@ void flightplugin::onLoad()
 	x_scalar = make_shared<float>(1.f);
 	y_scalar = make_shared<float>(1.f);
 	z_scalar = make_shared<float>(1.f);
-
+	pitch_scalar = make_shared<float>(1.f);
+	roll_scalar = make_shared<float>(1.f);
+	yaw_scalar = make_shared<float>(1.f);
+	forceMode = make_shared<int>(0);
 
 	gameWrapper->HookEvent("Function TAGame.GameEvent_Tutorial_TA.OnInit", bind(&flightplugin::OnFreeplayLoad, this, std::placeholders::_1));
 	gameWrapper->HookEvent("Function TAGame.GameEvent_Tutorial_TA.Destroyed", bind(&flightplugin::OnFreeplayDestroy, this, std::placeholders::_1));
@@ -51,6 +54,10 @@ void flightplugin::onLoad()
 	cvarManager->registerCvar("res_x", "1", "Scales Resultant.X", true, true, 0.f, true, 10.f, true).bindTo(x_scalar);
 	cvarManager->registerCvar("res_y", "1", "Scales Resultant.Y", true, true, 0.f, true, 10.f, true).bindTo(y_scalar);
 	cvarManager->registerCvar("res_z", "1", "Scales Resultant.Z", true, true, 0.f, true, 10.f, true).bindTo(z_scalar);
+	cvarManager->registerCvar("stabilize_pitch", "1", "Scales Pitch Stabilization", true, true, 0.f, true, 10.f, true).bindTo(pitch_scalar);
+	cvarManager->registerCvar("stabilize_roll", "1", "Scales Roll Stabilization", true, true, 0.f, true, 10.f, true).bindTo(roll_scalar);
+	cvarManager->registerCvar("stabilize_yaw", "1", "Scales Yaw Stabilization", true, true, 0.f, true, 10.f, true).bindTo(yaw_scalar);
+	cvarManager->registerCvar("sv_soccar_forcemode", "0", "Force mode to apply", true, true, 0, true, 6).bindTo(forceMode);
 
 	logger.cvarManager = this->cvarManager;
 	cmdManager.cvarManager = this->cvarManager;
@@ -107,12 +114,13 @@ void flightplugin::OnSetInput(CarWrapper cw, void * params, string funcName)
 {
 	if (gameWrapper->IsInFreeplay() && *enabled)
 	{
-		/* definitions */
+		/* Definitions */
 		auto car = gameWrapper->GetGameEventAsServer().GetGameCar();
 		RBState rbstate = car.GetRBState();
-
 		Vector loc = rbstate.Location;
 		Vector lin = rbstate.LinearVelocity; // Car velocity with respect to world
+		Vector v_unit = lin.norm();
+		Vector ang = rbstate.AngularVelocity;
 		float speed = lin.magnitude();
 		Quat quat = rbstate.Quaternion;
 		// The following vectors describe the basis of the car (the 3 sides of the car)
@@ -120,6 +128,7 @@ void flightplugin::OnSetInput(CarWrapper cw, void * params, string funcName)
 		Vector up = quatToUp(quat);
 		Vector fwd = quatToFwd(quat);
 
+		/* Begin Induced Drag Calculation*/
 		// Momentum vectors for air bouncing off car
 		Vector deflect_right = reflect_v1_on_v2(lin, right); // Simulate air bouncing off car left/right
 		Vector deflect_up = reflect_v1_on_v2(lin, up); // Simulate air bouncing off car roof/bottom
@@ -172,5 +181,13 @@ void flightplugin::OnSetInput(CarWrapper cw, void * params, string funcName)
 		result.Y *= scaleY;
 		result.Z *= scaleZ;
 		car.AddVelocity(result);
+
+		/* Begin stabilization calculation */
+		Vector axis_of_rotation = Vector::cross(fwd, lin);
+		Vector rotation_scalars = Vector(*pitch_scalar, *roll_scalar, *yaw_scalar);
+		Vector tau = axis_of_rotation.norm() * rotation_scalars *.01;
+		cvarManager->log("P/R/Y Scaled: " + sp::to_string(*pitch_scalar, 5) + "," + sp::to_string(*roll_scalar, 5) + "," + sp::to_string(*yaw_scalar, 5));
+		cvarManager->log("Tau: " + sp::vector_to_string(tau, 5));
+		car.SetAngularVelocity(tau,true);
 	}
 }

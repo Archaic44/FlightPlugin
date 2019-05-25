@@ -27,6 +27,8 @@ private:
 	std::shared_ptr<float> car_height, height;
 	std::shared_ptr<float> car_length, length;
 	std::shared_ptr<float> x_scalar, y_scalar, z_scalar;
+	std::shared_ptr<float> pitch_scalar, roll_scalar, yaw_scalar;
+	std::shared_ptr<int> forceMode;
 	shared_ptr<bool> enabled;
 
 public:
