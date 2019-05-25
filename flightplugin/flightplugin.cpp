@@ -37,6 +37,9 @@ void flightplugin::onLoad()
 	pitch_scalar = make_shared<float>(1.f);
 	roll_scalar = make_shared<float>(1.f);
 	yaw_scalar = make_shared<float>(1.f);
+	fwd_scalar = make_shared<float>(1.f);
+	up_scalar = make_shared<float>(1.f);
+	right_scalar = make_shared<float>(1.f);
 	forceMode = make_shared<int>(0);
 
 	gameWrapper->HookEvent("Function TAGame.GameEvent_Tutorial_TA.OnInit", bind(&flightplugin::OnFreeplayLoad, this, std::placeholders::_1));
@@ -57,6 +60,9 @@ void flightplugin::onLoad()
 	cvarManager->registerCvar("stabilize_pitch", "1", "Scales Pitch Stabilization", true, true, 0.f, true, 10.f, true).bindTo(pitch_scalar);
 	cvarManager->registerCvar("stabilize_roll", "1", "Scales Roll Stabilization", true, true, 0.f, true, 10.f, true).bindTo(roll_scalar);
 	cvarManager->registerCvar("stabilize_yaw", "1", "Scales Yaw Stabilization", true, true, 0.f, true, 10.f, true).bindTo(yaw_scalar);
+	cvarManager->registerCvar("lift_fwd", "1", "Scales Forward/Backward Lift", true, true, 0.f, true, 10.f, true).bindTo(fwd_scalar);
+	cvarManager->registerCvar("lift_up", "1", "Scales Up/Down Lift", true, true, 0.f, true, 10.f, true).bindTo(up_scalar);
+	cvarManager->registerCvar("lift_right", "1", "Scales Left/Right Lift", true, true, 0.f, true, 10.f, true).bindTo(right_scalar);
 	cvarManager->registerCvar("sv_soccar_forcemode", "0", "Force mode to apply", true, true, 0, true, 6).bindTo(forceMode);
 
 	logger.cvarManager = this->cvarManager;
@@ -160,15 +166,15 @@ void flightplugin::OnSetInput(CarWrapper cw, void * params, string funcName)
 		float roof = roof_area / total_area;
 		float door = door_area / total_area;
 		float bumper = bumper_area / total_area;
-		float flux_r = abs(Vector::dot(deflect_right.norm(), right) * door * coef);
-		float flux_u = abs(Vector::dot(deflect_up.norm(), up) * roof * coef);
-		float flux_f = abs(Vector::dot(deflect_fwd.norm(), fwd) * bumper * coef);
+		float flux_r = Vector::dot(deflect_right.norm(), right) * door;
+		float flux_u = Vector::dot(deflect_up.norm(), up) * roof;
+		float flux_f = Vector::dot(deflect_fwd.norm(), fwd) * bumper;
 		cvarManager->log(sp::to_string(flux_r, 5) + "   " + sp::to_string(flux_u, 5) + "   " + sp::to_string(flux_f, 5));
 
 		// Modify resultant vector by flux
-		res_right = res_right * flux_r;
-		res_up = res_up * flux_u;
-		res_fwd = res_fwd * flux_f;
+		res_right = res_right * abs(flux_r *coef);
+		res_up = res_up * abs(flux_u * coef);
+		res_fwd = res_fwd * abs(flux_f * coef);
 		Vector result = res_up + res_fwd + res_right;
 		cvarManager->log("Rscaled: " + sp::vector_to_string(res_right, 5));
 		cvarManager->log("Uscaled: " + sp::vector_to_string(res_up, 5));
@@ -182,12 +188,16 @@ void flightplugin::OnSetInput(CarWrapper cw, void * params, string funcName)
 		result.Z *= scaleZ;
 		car.AddVelocity(result);
 
-		/* Begin stabilization calculation */
+		/* Begin Stabilization Calculation */
 		Vector axis_of_rotation = Vector::cross(fwd, lin);
 		Vector rotation_scalars = Vector(*pitch_scalar, *roll_scalar, *yaw_scalar);
 		Vector tau = axis_of_rotation.norm() * rotation_scalars *.01;
 		cvarManager->log("P/R/Y Scaled: " + sp::to_string(*pitch_scalar, 5) + "," + sp::to_string(*roll_scalar, 5) + "," + sp::to_string(*yaw_scalar, 5));
 		cvarManager->log("Tau: " + sp::vector_to_string(tau, 5));
 		car.SetAngularVelocity(tau,true);
+
+		/* Begin Lift Calculation*/
+		Vector lift = Vector(0, 0, 0);
+		car.AddVelocity(lift);
 	}
 }
