@@ -9,7 +9,7 @@
 
 using namespace sp;
 
-void Painter::initDrawables()
+void Painter::initDrawables(flightplugin* const plugin)
 {
 	gameWrapper->RegisterDrawable([this](CanvasWrapper cw) {
 		if (!gameWrapper->IsInGame()) {

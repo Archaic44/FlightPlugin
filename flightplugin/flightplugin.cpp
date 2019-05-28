@@ -74,7 +74,7 @@ void flightplugin::onLoad()
 	painter.gameWrapper = this->gameWrapper;
 	painter.cvarManager = this->cvarManager;
 
-	painter.initDrawables();
+	painter.initDrawables(this);
 }
 void flightplugin::onUnload()
 {

@@ -6,6 +6,7 @@
 #define COLOR_PANEL 64c, 64c, 64c, 192c
 
 class CVarManagerWrapper;
+class flightplugin;
 
 inline constexpr char operator "" c(unsigned long long arg) noexcept
 {
@@ -55,7 +56,6 @@ private:
 public:
 	std::shared_ptr<GameWrapper> gameWrapper;
 	std::shared_ptr<CVarManagerWrapper> cvarManager;
-
-	void initDrawables();
+	void initDrawables(flightplugin* const plugin);
 
 };
