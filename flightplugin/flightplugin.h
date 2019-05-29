@@ -27,13 +27,11 @@ public:
 	virtual void onLoad();
 	virtual void onUnload();
 
-	std::shared_ptr<float> air_density, rho;
-	std::shared_ptr<float> car_width, width;
-	std::shared_ptr<float> car_height, height;
-	std::shared_ptr<float> car_length, length;
+	std::shared_ptr<float> rho;
+	std::shared_ptr<float> length, width, height;
 	std::shared_ptr<float> x_scalar, y_scalar, z_scalar;
 	std::shared_ptr<float> pitch_scalar, roll_scalar, yaw_scalar;
-	std::shared_ptr<float> fwd_scalar, up_scalar, right_scalar;
+	std::shared_ptr<float> up_scalar;
 	std::shared_ptr<int> forceMode;
 	shared_ptr<bool> enabled;
 

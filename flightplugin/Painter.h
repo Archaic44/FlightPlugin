@@ -50,12 +50,16 @@ private:
 	void drawCarDerivedInfo(CanvasWrapper cw, CarWrapper car, int x, int y);
 	void drawYawPlane(CanvasWrapper cw, CarWrapper car, int x, int y, float scale);
 	void drawInputPanel(CanvasWrapper cw, CarWrapper car, int x, int y);
+	void drawSliderValues(CanvasWrapper cw, CarWrapper car, int x, int y);
 	Vector Rotate(Vector aVec, double roll, double yaw, double pitch);
 
 
 public:
 	std::shared_ptr<GameWrapper> gameWrapper;
 	std::shared_ptr<CVarManagerWrapper> cvarManager;
-	void initDrawables(flightplugin* const plugin);
+	std::shared_ptr<flightplugin> pluginsfafaf;
+	void initDrawables();
+
+	flightplugin* shared;
 
 };
