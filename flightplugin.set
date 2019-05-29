@@ -1,5 +1,5 @@
 Flight Plugin
-9|Lift is generated based on your speed relative to the direction your car is facing.
+9|The following sliders affect drag, angular stabilization, lift, and the car's hitbox.
 0|Load Plugin|plugin load flightplugin
 7
 0|Unload Plugin|plugin unload flightplugin
@@ -19,31 +19,26 @@ Flight Plugin
 4|Car Height|car_height|0|10
 7
 0|Reset##d|car_height 1
-4|Scale X Drag|res_x|0|10
+4|X Drag|drag_x|0|10
 7
-0|Reset##e|res_x 1
-4|Scale Y Drag|res_y|0|10
+0|Reset##e|drag_x 0
+4|Y Drag|drag_y|0|10
 7
-0|Reset##f|res_y 1
-4|Scale Z Drag|res_z|0|10
+0|Reset##f|drag_y 0
+4|Z Drag|drag_z|0|10
 7
-0|Reset##g|res_z 1
-4|Scales Pitch Stabilization|stabilize_pitch|0|10
+0|Reset##g|drag_z 0
+4|Pitch Stabilization|stabilize_pitch|0|10
 7
 0|Reset##h|stabilize_pitch 0
-4|Scales Roll Stabilization|stabilize_roll|0|10
+4|Roll Stabilization|stabilize_roll|0|10
 7
 0|Reset##i|stabilize_roll 0
-4|Scales Yaw Stabilization|stabilize_yaw|0|10
+4|Yaw Stabilization|stabilize_yaw|0|10
 7
 0|Reset##j|stabilize_yaw 0
-4|Scales Fwd/Backwards Lift|lift_fwd|0|10
+
+4|Vertical Lift|lift|0|10
 7
-0|Reset##k|lift_fwd 0
-4|Scales Up/Down Lift|lift_up|0|10
-7
-0|Reset##l|lift_up 0
-4|Scales Left/Right Lift|lift_right|0|10
-7
-0|Reset##m|lift_right 0
+0|Reset##l|lift 0
 9|This plugin was authored by Digby Deathstar and jsonV

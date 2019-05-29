@@ -13,7 +13,7 @@ void Painter::initDrawables()
 {
 	gameWrapper->RegisterDrawable([this](CanvasWrapper cw) {
 		if (!gameWrapper->IsInGame()) {
-			return;
+			return; 
 		}
 		if (cvarManager->getCvar("showHUD").getBoolValue())
 		{
@@ -35,6 +35,10 @@ void Painter::drawPanels(CanvasWrapper cw)
 		if (cvarManager->getCvar("showYaw").getBoolValue())
 		{
 			drawYawPlane(cw, car, 20, 400, 1);
+		}
+		if (cvarManager->getCvar("showSlider").getBoolValue())
+		{
+			drawSliderValues(cw, car, 1600, 600);
 		}
 	}
 }
@@ -126,6 +130,44 @@ void Painter::drawCarDerivedInfo(CanvasWrapper cw, CarWrapper car, int x, int y)
 	currentLine += lineSpacing;
 	this->drawStringAt(cw, "Angular Vel", x + marginLeft, y + currentLine);
 	this->drawStringAt(cw, sp::vector_to_string(ang, 5), x + marginLeft + nameSpacing, y + currentLine);
+}
+
+void Painter::drawSliderValues(CanvasWrapper cw, CarWrapper car, int x, int y)
+{
+	flightplugin* s = shared;
+	Vector car_dimensions = Vector(*s->length, *s->width, *s->height);
+	Vector drag = Vector(*s->x_scalar, *s->y_scalar, *s->z_scalar);
+	Vector stabilization = Vector(*s->pitch_scalar, *s->roll_scalar, *s->yaw_scalar);
+	float lift =*s->up_scalar;
+	int marginLeft = 10;
+	int marginTop = 20;
+	int titleSpacing = 90;
+	int nameSpacing = 130;
+	int vecSpacing = 70;
+	int quatSpacing = 120;
+	int lineSpacing = 30;
+	cw.SetPosition({ x, y });
+	cw.SetColor(COLOR_PANEL);
+	cw.FillBox({ 300, 200 });
+	cw.SetColor(COLOR_TEXT);
+	cw.SetColor(205, 155, 15, 255);
+	this->drawStringAt(cw, "Slider Values", x + titleSpacing, y + marginTop);
+	int currentLine = marginTop + 20;
+	cw.SetColor(255, 255, 255, 255);
+	this->drawStringAt(cw, "Air Density", x + marginLeft, y + currentLine);
+	this->drawStringAt(cw, sp::to_string(*shared->rho, 3), x + marginLeft + nameSpacing, y + currentLine);
+	currentLine += lineSpacing;
+	this->drawStringAt(cw, "Car LWH", x + marginLeft, y + currentLine);
+	this->drawStringAt(cw, sp::vector_to_string(car_dimensions, 3), x + marginLeft + nameSpacing, y + currentLine);
+	currentLine += lineSpacing;
+	this->drawStringAt(cw, "Drag", x + marginLeft, y + currentLine);
+	this->drawStringAt(cw, sp::vector_to_string(drag, 3), x + marginLeft + nameSpacing, y + currentLine);
+	currentLine += lineSpacing;
+	this->drawStringAt(cw, "Stabilization", x + marginLeft, y + currentLine);
+	this->drawStringAt(cw, sp::vector_to_string(stabilization, 3), x + marginLeft + nameSpacing, y + currentLine);
+	currentLine += lineSpacing;
+	this->drawStringAt(cw, "Lift", x + marginLeft, y + currentLine);
+	this->drawStringAt(cw, sp::to_string(lift, 3), x + marginLeft + nameSpacing, y + currentLine);
 }
 
 Vector Painter::Rotate(Vector aVec, double roll, double yaw, double pitch)
