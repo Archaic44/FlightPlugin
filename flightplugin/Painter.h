@@ -6,6 +6,7 @@
 #define COLOR_PANEL 64c, 64c, 64c, 192c
 
 class CVarManagerWrapper;
+class flightplugin;
 
 inline constexpr char operator "" c(unsigned long long arg) noexcept
 {
@@ -49,13 +50,16 @@ private:
 	void drawCarDerivedInfo(CanvasWrapper cw, CarWrapper car, int x, int y);
 	void drawYawPlane(CanvasWrapper cw, CarWrapper car, int x, int y, float scale);
 	void drawInputPanel(CanvasWrapper cw, CarWrapper car, int x, int y);
+	void drawSliderValues(CanvasWrapper cw, CarWrapper car, int x, int y);
 	Vector Rotate(Vector aVec, double roll, double yaw, double pitch);
 
 
 public:
 	std::shared_ptr<GameWrapper> gameWrapper;
 	std::shared_ptr<CVarManagerWrapper> cvarManager;
-
+	std::shared_ptr<flightplugin> pluginsfafaf;
 	void initDrawables();
+
+	flightplugin* shared;
 
 };

@@ -20,6 +20,7 @@ void CommandsManager::addCommands()
 	cvarManager->registerCvar("showCarDerivedInfo", "1");
 	cvarManager->registerCvar("showInput", "1");
 	cvarManager->registerCvar("showYaw", "1");
+	cvarManager->registerCvar("showSlider", "1");
 
 
 	cvarManager->registerCvar("overrideInput", "0");
