@@ -57,9 +57,6 @@ private:
 public:
 	std::shared_ptr<GameWrapper> gameWrapper;
 	std::shared_ptr<CVarManagerWrapper> cvarManager;
-	std::shared_ptr<flightplugin> pluginsfafaf;
 	void initDrawables();
-
 	flightplugin* shared;
-
 };
