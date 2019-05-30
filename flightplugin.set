@@ -7,6 +7,12 @@ Flight Plugin
 0|Enable Flight|flight_enabled 1
 7
 0|Disable Flight|flight_enabled 0
+4|Max Speed|max_speed|0|10
+7
+0|Reset##m|max_speed 1
+4|Boost Power|boost_power|0|10
+7
+0|Reset##n|boost_power 1
 4|Air Density|air_density|0|1
 7
 0|Reset##a|air_density 0
@@ -37,8 +43,7 @@ Flight Plugin
 4|Yaw Stabilization|stabilize_yaw|0|10
 7
 0|Reset##j|stabilize_yaw 0
-
-4|Vertical Lift|lift|0|10
+4|Lift|lift|0|10
 7
 0|Reset##l|lift 0
 9|This plugin was authored by Digby Deathstar and jsonV

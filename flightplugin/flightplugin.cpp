@@ -27,6 +27,8 @@ void flightplugin::onLoad()
 {
 	enabled = make_shared<bool>(false);
 	rho = make_shared<float>(0.f);
+	boost = make_shared<float>(1.f);
+	max_speed = make_shared<float>(1.f);
 	length = make_shared<float>(1.f);
 	width = make_shared<float>(1.f);
 	height = make_shared<float>(1.f);
@@ -56,7 +58,8 @@ void flightplugin::onLoad()
 	cvarManager->registerCvar("stabilize_roll", "0", "Scales Roll Stabilization", true, true, 0.f, true, 10.f, true).bindTo(roll_scalar);
 	cvarManager->registerCvar("stabilize_yaw", "0", "Scales Yaw Stabilization", true, true, 0.f, true, 10.f, true).bindTo(yaw_scalar);
 	cvarManager->registerCvar("lift", "0", "Scales Up/Down Lift", true, true, 0.f, true, 10.f, true).bindTo(up_scalar);
-	cvarManager->registerCvar("sv_soccar_forcemode", "0", "Force mode to apply", true, true, 0, true, 6).bindTo(forceMode);
+	cvarManager->registerCvar("boost_power", "1", "Boost Power Multiplier", true, true, 0.f, true, 10.f).bindTo(boost);
+	cvarManager->registerCvar("max_speed", "1", "Terminal Velocity Multiplier", true, true, 0.f, true, 10.f).bindTo(max_speed);
 
 	logger.cvarManager = this->cvarManager;
 	cmdManager.cvarManager = this->cvarManager;
@@ -114,7 +117,7 @@ void flightplugin::OnSetInput(CarWrapper cw, void * params, string funcName)
 	if (gameWrapper->IsInFreeplay() && *enabled)
 	{
 		/* Definitions */
-		auto car = gameWrapper->GetGameEventAsServer().GetGameCar();
+		auto car = cw;
 		RBState rbstate = car.GetRBState();
 		Vector loc = rbstate.Location;
 		Vector lin = rbstate.LinearVelocity; // Car velocity with respect to world
@@ -178,5 +181,9 @@ void flightplugin::OnSetInput(CarWrapper cw, void * params, string funcName)
 		/* Begin Lift Calculation*/
 		Vector up_lift = up * (*up_scalar) * Vector::dot(lin, fwd) *.001;
 		car.AddVelocity(up_lift);
+
+		car.SetMaxLinearSpeed(2300 * (*max_speed));
+		car.SetMaxLinearSpeed2(2300 * (*max_speed));
+		car.GetBoostComponent().SetBoostForce(178500*(*boost));
 	}
 }

@@ -38,7 +38,7 @@ void Painter::drawPanels(CanvasWrapper cw)
 		}
 		if (cvarManager->getCvar("showSlider").getBoolValue())
 		{
-			drawSliderValues(cw, car, 1600, 600);
+			drawSliderValues(cw, car, 1600, 550);
 		}
 	}
 }
@@ -139,6 +139,8 @@ void Painter::drawSliderValues(CanvasWrapper cw, CarWrapper car, int x, int y)
 	Vector drag = Vector(*s->x_scalar, *s->y_scalar, *s->z_scalar);
 	Vector stabilization = Vector(*s->pitch_scalar, *s->roll_scalar, *s->yaw_scalar);
 	float lift =*s->up_scalar;
+	float boost = *s->boost;
+	float speed = *s->max_speed;
 	int marginLeft = 10;
 	int marginTop = 20;
 	int titleSpacing = 90;
@@ -148,7 +150,7 @@ void Painter::drawSliderValues(CanvasWrapper cw, CarWrapper car, int x, int y)
 	int lineSpacing = 30;
 	cw.SetPosition({ x, y });
 	cw.SetColor(COLOR_PANEL);
-	cw.FillBox({ 300, 200 });
+	cw.FillBox({ 300, 250 });
 	cw.SetColor(COLOR_TEXT);
 	cw.SetColor(205, 155, 15, 255);
 	this->drawStringAt(cw, "Slider Values", x + titleSpacing, y + marginTop);
@@ -168,6 +170,12 @@ void Painter::drawSliderValues(CanvasWrapper cw, CarWrapper car, int x, int y)
 	currentLine += lineSpacing;
 	this->drawStringAt(cw, "Lift", x + marginLeft, y + currentLine);
 	this->drawStringAt(cw, sp::to_string(lift, 3), x + marginLeft + nameSpacing, y + currentLine);
+	currentLine += lineSpacing;
+	this->drawStringAt(cw, "Max Speed", x + marginLeft, y + currentLine);
+	this->drawStringAt(cw, sp::to_string(speed, 3), x + marginLeft + nameSpacing, y + currentLine);
+	currentLine += lineSpacing;
+	this->drawStringAt(cw, "Boost Power", x + marginLeft, y + currentLine);
+	this->drawStringAt(cw, sp::to_string(boost, 3), x + marginLeft + nameSpacing, y + currentLine);
 }
 
 Vector Painter::Rotate(Vector aVec, double roll, double yaw, double pitch)
