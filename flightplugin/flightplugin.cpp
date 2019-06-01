@@ -26,6 +26,7 @@ using namespace sp;
 void flightplugin::onLoad()
 {
 	enabled = make_shared<bool>(false);
+	no_sticky = make_shared<bool>(false);
 	rho = make_shared<float>(0.f);
 	boost = make_shared<float>(1.f);
 	max_speed = make_shared<float>(1.f);
@@ -47,6 +48,8 @@ void flightplugin::onLoad()
 	cvarManager->registerCvar("flight_enabled", "0", "Enables/disable flight lift functionality", true, true, 0.f, true, 1.f)
 		.addOnValueChanged(std::bind(&flightplugin::OnEnabledChanged, this, std::placeholders::_1, std::placeholders::_2));
 	cvarManager->getCvar("flight_enabled").bindTo(enabled);
+	cvarManager->registerCvar("no_sticky", "0", "Enables/disable flight lift functionality", true, true, 0.f, true, 1.f).bindTo(no_sticky);
+	cvarManager->registerCvar("air_density", "0", "Air Density", true, true, 0.f, true, 1.f, true).bindTo(rho);
 	cvarManager->registerCvar("air_density", "0", "Air Density", true, true, 0.f, true, 1.f, true).bindTo(rho);
 	cvarManager->registerCvar("car_length", "1", "Car Length", true, true, 0.f, true, 10.f, true).bindTo(length);
 	cvarManager->registerCvar("car_width", "1", "Car Width", true, true, 0.f, true, 10.f, true).bindTo(width);
@@ -159,7 +162,7 @@ void flightplugin::OnSetInput(CarWrapper cw, void * params, string funcName)
 		float flux_u = Vector::dot(deflect_up.norm(), up) * roof;
 		float flux_f = Vector::dot(deflect_fwd.norm(), fwd) * bumper;
 
-		// Modify resultant vector by flux
+		// Scale resulting drag vector by flux and sliders
 		res_right = res_right * abs(flux_r *coef);
 		res_up = res_up * abs(flux_u * coef);
 		res_fwd = res_fwd * abs(flux_f * coef);
@@ -182,8 +185,12 @@ void flightplugin::OnSetInput(CarWrapper cw, void * params, string funcName)
 		Vector up_lift = up * (*up_scalar) * Vector::dot(lin, fwd) *.001;
 		car.AddVelocity(up_lift);
 
-		car.SetMaxLinearSpeed(2300 * (*max_speed));
+		car.SetMaxLinearSpeed(2300 * (*max_speed)); // 2300 is the OG max speed
 		car.SetMaxLinearSpeed2(2300 * (*max_speed));
-		car.GetBoostComponent().SetBoostForce(178500*(*boost));
+		car.GetBoostComponent().SetBoostForce(178500*(*boost)); //178500 is the OG BoostSpeed
+		if (*no_sticky)
+			car.SetStickyForce({ 0.f,0.f });
+		else
+			car.SetStickyForce({ 0.5,1.5 }); // OG values are  .5, 1.5 -- Ground/Wall
 	}
 }

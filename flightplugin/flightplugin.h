@@ -34,7 +34,7 @@ public:
 	std::shared_ptr<float> pitch_scalar, roll_scalar, yaw_scalar;
 	std::shared_ptr<float> up_scalar;
 	std::shared_ptr<int> forceMode;
-	shared_ptr<bool> enabled;
+	std::shared_ptr<bool> enabled, no_sticky;
 
 	void OnSetInput(CarWrapper cw, void* params, string funcName);
 	void OnFreeplayLoad(std::string eventName);

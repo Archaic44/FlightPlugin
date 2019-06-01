@@ -38,14 +38,14 @@ void Painter::drawPanels(CanvasWrapper cw)
 		}
 		if (cvarManager->getCvar("showSlider").getBoolValue())
 		{
-			drawSliderValues(cw, car, 1600, 550);
+			drawSliderValues(cw, car, 1600, 510);
 		}
 	}
 }
 
 void Painter::drawStringAt(CanvasWrapper cw, std::string text, int x, int y, Color col)
 {
-	cw.SetPosition({ x, y });
+	cw.SetPosition({(float) x,(float) y });
 	cw.SetColor(col.r, col.g, col.b, col.a);
 	cw.DrawString(text);
 }
@@ -57,7 +57,7 @@ void Painter::drawStringAt(CanvasWrapper cw, std::string text, Vector2_ loc, Col
 
 void Painter::drawLine(CanvasWrapper cw, Vector2_ v1, Vector2_ v2)
 {
-	cw.DrawLine({ v1.X, v1.Y }, { v2.X, v2.Y });
+	cw.DrawLine({(float)v1.X, (float)v1.Y}, {(float)v2.X, (float)v2.Y});
 }
 
 void Painter::drawCarDerivedInfo(CanvasWrapper cw, CarWrapper car, int x, int y)
@@ -93,7 +93,7 @@ void Painter::drawCarDerivedInfo(CanvasWrapper cw, CarWrapper car, int x, int y)
 	int vecSpacing = 70;
 	int quatSpacing = 120;
 	int lineSpacing = 30;
-	cw.SetPosition({ x, y });
+	cw.SetPosition({(float)x, (float)y});
 	cw.SetColor(COLOR_PANEL);
 	cw.FillBox({ 360, 350 });
 	cw.SetColor(COLOR_TEXT);
@@ -138,6 +138,7 @@ void Painter::drawSliderValues(CanvasWrapper cw, CarWrapper car, int x, int y)
 	Vector car_dimensions = Vector(*s->length, *s->width, *s->height);
 	Vector drag = Vector(*s->x_scalar, *s->y_scalar, *s->z_scalar);
 	Vector stabilization = Vector(*s->pitch_scalar, *s->roll_scalar, *s->yaw_scalar);
+	bool sticky = *s->no_sticky;
 	float lift =*s->up_scalar;
 	float boost = *s->boost;
 	float speed = *s->max_speed;
@@ -148,34 +149,38 @@ void Painter::drawSliderValues(CanvasWrapper cw, CarWrapper car, int x, int y)
 	int vecSpacing = 70;
 	int quatSpacing = 120;
 	int lineSpacing = 30;
-	cw.SetPosition({ x, y });
+	cw.SetPosition({(float)x, (float)y});
 	cw.SetColor(COLOR_PANEL);
-	cw.FillBox({ 300, 250 });
+	cw.FillBox({ 300, 280 });
 	cw.SetColor(COLOR_TEXT);
 	cw.SetColor(205, 155, 15, 255);
 	this->drawStringAt(cw, "Slider Values", x + titleSpacing, y + marginTop);
 	int currentLine = marginTop + 20;
 	cw.SetColor(255, 255, 255, 255);
-	this->drawStringAt(cw, "Air Density", x + marginLeft, y + currentLine);
-	this->drawStringAt(cw, sp::to_string(*shared->rho, 3), x + marginLeft + nameSpacing, y + currentLine);
-	currentLine += lineSpacing;
-	this->drawStringAt(cw, "Car LWH", x + marginLeft, y + currentLine);
-	this->drawStringAt(cw, sp::vector_to_string(car_dimensions, 3), x + marginLeft + nameSpacing, y + currentLine);
-	currentLine += lineSpacing;
-	this->drawStringAt(cw, "Drag", x + marginLeft, y + currentLine);
-	this->drawStringAt(cw, sp::vector_to_string(drag, 3), x + marginLeft + nameSpacing, y + currentLine);
-	currentLine += lineSpacing;
-	this->drawStringAt(cw, "Stabilization", x + marginLeft, y + currentLine);
-	this->drawStringAt(cw, sp::vector_to_string(stabilization, 3), x + marginLeft + nameSpacing, y + currentLine);
-	currentLine += lineSpacing;
-	this->drawStringAt(cw, "Lift", x + marginLeft, y + currentLine);
-	this->drawStringAt(cw, sp::to_string(lift, 3), x + marginLeft + nameSpacing, y + currentLine);
-	currentLine += lineSpacing;
-	this->drawStringAt(cw, "Max Speed", x + marginLeft, y + currentLine);
+	this->drawStringAt(cw, "Max Speed: ", x + marginLeft, y + currentLine);
 	this->drawStringAt(cw, sp::to_string(speed, 3), x + marginLeft + nameSpacing, y + currentLine);
 	currentLine += lineSpacing;
-	this->drawStringAt(cw, "Boost Power", x + marginLeft, y + currentLine);
+	this->drawStringAt(cw, "Boost Power: ", x + marginLeft, y + currentLine);
 	this->drawStringAt(cw, sp::to_string(boost, 3), x + marginLeft + nameSpacing, y + currentLine);
+	currentLine += lineSpacing;
+	this->drawStringAt(cw, "Air Density: ", x + marginLeft, y + currentLine);
+	this->drawStringAt(cw, sp::to_string(*shared->rho, 3), x + marginLeft + nameSpacing, y + currentLine);
+	currentLine += lineSpacing;
+	this->drawStringAt(cw, "Car LWH: ", x + marginLeft, y + currentLine);
+	this->drawStringAt(cw, sp::vector_to_string(car_dimensions, 3), x + marginLeft + nameSpacing, y + currentLine);
+	currentLine += lineSpacing;
+	this->drawStringAt(cw, "Drag: ", x + marginLeft, y + currentLine);
+	this->drawStringAt(cw, sp::vector_to_string(drag, 3), x + marginLeft + nameSpacing, y + currentLine);
+	currentLine += lineSpacing;
+	this->drawStringAt(cw, "Stabilization: ", x + marginLeft, y + currentLine);
+	this->drawStringAt(cw, sp::vector_to_string(stabilization, 3), x + marginLeft + nameSpacing, y + currentLine);
+	currentLine += lineSpacing;
+	this->drawStringAt(cw, "Lift: ", x + marginLeft, y + currentLine);
+	this->drawStringAt(cw, sp::to_string(lift, 3), x + marginLeft + nameSpacing, y + currentLine);
+	currentLine += lineSpacing;
+	this->drawStringAt(cw, "Sticky Wheels: ", x + marginLeft, y + currentLine);
+	this->drawStringAt(cw, sticky ? "false" : "true", x + marginLeft + nameSpacing, y + currentLine);
+
 }
 
 Vector Painter::Rotate(Vector aVec, double roll, double yaw, double pitch)
@@ -221,9 +226,9 @@ void Painter::drawYawPlane(CanvasWrapper cw, CarWrapper car, int x, int y, float
 	Vector2_ offset(x, y);
 	int width = 200;
 	int height = 200;
-	cw.SetPosition({ x, y });
+	cw.SetPosition({(float)x, (float)y});
 	cw.SetColor(COLOR_PANEL);
-	cw.FillBox({ (int)(width * scale), (int)(height * scale) });
+	cw.FillBox({ (width * scale), (height * scale) });
 	cw.SetColor(COLOR_TEXT);
 	Vector2_ center(100, 100);
 	Vector2_ axisVer(0, -80);
@@ -266,9 +271,9 @@ void Painter::drawInputPanel(CanvasWrapper cw, CarWrapper car, int x, int y)
 
 	int lineSpacing = 30;
 
-	cw.SetPosition({ x, y });
+	cw.SetPosition({(float)x,(float)y});
 	cw.SetColor(COLOR_PANEL);
-	cw.FillBox({ 420, 280 });
+	cw.FillBox({420.f, 280.f});
 	cw.SetColor(COLOR_TEXT);
 
 	this->drawStringAt(cw, "Player input", x + marginLeft, y + marginTop);
