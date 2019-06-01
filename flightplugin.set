@@ -46,4 +46,7 @@ Flight Plugin
 4|Lift|lift|0|10
 7
 0|Reset##l|lift 0
+0|Enable Sticky Floors|no_sticky 0
+7
+0|Disable Sticky Floors|no_sticky 1
 9|This plugin was authored by Digby Deathstar and jsonV
