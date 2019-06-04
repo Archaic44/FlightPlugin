@@ -18,8 +18,3 @@ You must have BakkesMod downloaded. Visual Studio is the recommended IDE for com
 Set these environment variables in your OS:
 - `BakkesSDK` : `Drive:\Program Files %28x86%29\Steam\steamapps\common\rocketleague\Binaries\Win32\bakkesmod\bakkesmodsdk\include\`
 - `BakkesLIB` : `Drive:\Program Files %28x86%29\Steam\steamapps\common\rocketleague\Binaries\Win32\bakkesmod\bakkesmodsdk\include\lib\`
-
-In your Visual Studio, clone the repo and set the sln properties by right clicking on the sln file:
-- In general, set the Windows SDK version and set the file output configuration type to `.dll`.
-- In C/C++, add `$(BakkesSDK)` to the Additional Include Directories
-- In Linker, add `$(BakkesLIB)` to the Addition Library Directories.
