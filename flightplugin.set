@@ -7,6 +7,7 @@ Flight Plugin
 0|Enable Flight|flight_enabled 1
 7
 0|Disable Flight|flight_enabled 0
+6|Flight Presets|flightplugin_presets|Default@0&Digby@1
 4|Max Speed|max_speed|0|10
 7
 0|Reset##m|max_speed 1

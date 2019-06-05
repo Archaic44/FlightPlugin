@@ -45,7 +45,8 @@ void Painter::drawPanels(CanvasWrapper cw)
 
 void Painter::drawStringAt(CanvasWrapper cw, std::string text, int x, int y, Color col)
 {
-	cw.SetPosition({(float) x,(float) y });
+	Vector2 vec = { x,y };
+	cw.SetPosition(vec);
 	cw.SetColor(col.r, col.g, col.b, col.a);
 	cw.DrawString(text);
 }
@@ -57,7 +58,9 @@ void Painter::drawStringAt(CanvasWrapper cw, std::string text, Vector2_ loc, Col
 
 void Painter::drawLine(CanvasWrapper cw, Vector2_ v1, Vector2_ v2)
 {
-	cw.DrawLine({(float)v1.X, (float)v1.Y}, {(float)v2.X, (float)v2.Y});
+	Vector2 _v1 = { v1.X, v1.Y };
+	Vector2 _v2 = { v2.X, v2.Y };
+	cw.DrawLine(_v1, _v2);
 }
 
 void Painter::drawCarDerivedInfo(CanvasWrapper cw, CarWrapper car, int x, int y)
@@ -93,9 +96,11 @@ void Painter::drawCarDerivedInfo(CanvasWrapper cw, CarWrapper car, int x, int y)
 	int vecSpacing = 70;
 	int quatSpacing = 120;
 	int lineSpacing = 30;
-	cw.SetPosition({(float)x, (float)y});
+	Vector2 pos = { x,y };
+	cw.SetPosition(pos);
 	cw.SetColor(COLOR_PANEL);
-	cw.FillBox({ 360, 350 });
+	Vector2 box = { 360, 350 };
+	cw.FillBox(box);
 	cw.SetColor(COLOR_TEXT);
 	cw.SetColor(205, 155, 15, 255);
 	this->drawStringAt(cw, "Flight Plugin", x + titleSpacing, y + marginTop);
@@ -149,9 +154,11 @@ void Painter::drawSliderValues(CanvasWrapper cw, CarWrapper car, int x, int y)
 	int vecSpacing = 70;
 	int quatSpacing = 120;
 	int lineSpacing = 30;
-	cw.SetPosition({(float)x, (float)y});
+	Vector2 pos = { x,y };
+	cw.SetPosition(pos);
 	cw.SetColor(COLOR_PANEL);
-	cw.FillBox({ 300, 280 });
+	Vector2 box = { 300, 280 };
+	cw.FillBox(box);
 	cw.SetColor(COLOR_TEXT);
 	cw.SetColor(205, 155, 15, 255);
 	this->drawStringAt(cw, "Slider Values", x + titleSpacing, y + marginTop);
@@ -226,9 +233,10 @@ void Painter::drawYawPlane(CanvasWrapper cw, CarWrapper car, int x, int y, float
 	Vector2_ offset(x, y);
 	int width = 200;
 	int height = 200;
-	cw.SetPosition({(float)x, (float)y});
+	Vector2 pos = { x,y };
+	cw.SetPosition(pos);
 	cw.SetColor(COLOR_PANEL);
-	cw.FillBox({ (width * scale), (height * scale) });
+	Vector2 box = { width*scale, height*scale };
 	cw.SetColor(COLOR_TEXT);
 	Vector2_ center(100, 100);
 	Vector2_ axisVer(0, -80);
@@ -271,9 +279,10 @@ void Painter::drawInputPanel(CanvasWrapper cw, CarWrapper car, int x, int y)
 
 	int lineSpacing = 30;
 
-	cw.SetPosition({(float)x,(float)y});
+	Vector2 pos = { x,y };
+	cw.SetPosition(pos);
 	cw.SetColor(COLOR_PANEL);
-	cw.FillBox({420.f, 280.f});
+	Vector2 box = { 420, 280 };
 	cw.SetColor(COLOR_TEXT);
 
 	this->drawStringAt(cw, "Player input", x + marginLeft, y + marginTop);

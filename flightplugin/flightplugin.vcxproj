@@ -131,10 +131,12 @@
     <ClCompile Include="HelperFunctions.cpp" />
     <ClCompile Include="Logger.cpp" />
     <ClCompile Include="Painter.cpp" />
+    <ClCompile Include="Preset.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="CommandsManager.h" />
     <ClInclude Include="flightplugin.h" />
+    <ClInclude Include="Preset.h" />
     <ClInclude Include="HelperFunctions.h" />
     <ClInclude Include="Logger.h" />
     <ClInclude Include="Painter.h" />

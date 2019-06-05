@@ -12,6 +12,7 @@
 #include "Logger.h"
 #include "CommandsManager.h"
 #include "Painter.h"
+#include "Preset.h"
 
 class flightplugin : public BakkesMod::Plugin::BakkesModPlugin
 {
@@ -22,6 +23,7 @@ private:
 	RBState oldCarRBState;
 	std::chrono::time_point<std::chrono::steady_clock> last_time;
 	std::chrono::time_point<std::chrono::steady_clock> start_time;
+	std::shared_ptr<Preset> pre;
 
 public:
 	virtual void onLoad();

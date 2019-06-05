@@ -20,6 +20,10 @@ std::string sp::to_string_scientific(float f, int prec, int treshold)
 {
 	return to_string_decimals_scientific(f, prec, treshold);
 }
+std::string sp::bool_to_string(bool b)
+{
+	return b ? "1" : "0";
+}
 bool sp::vector_eq(Vector v1, Vector v2)
 {
 	return (v1.X == v2.X) && (v1.Y == v2.Y) && (v1.Z == v2.Z);

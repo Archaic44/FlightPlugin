@@ -33,6 +33,8 @@ namespace sp
 	std::string to_string(float f, int prec = 2);
 	std::string to_string_scientific(float f, int prec = 11, int treshold = 4);
 
+	std::string bool_to_string(bool b);
+
 	bool vector_eq(Vector v1, Vector v2);
 	bool quat_eq(Quat q1, Quat q2);
 	bool rot_eq(Rotator r1, Rotator r2);

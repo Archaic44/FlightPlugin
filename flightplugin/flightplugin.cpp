@@ -17,6 +17,7 @@
 #include "bakkesmod\wrappers\GameEvent\TutorialWrapper.h"
 #include "bakkesmod/wrappers/arraywrapper.h"
 #include "utils\parser.h"
+#include "Preset.h"
 
 
 BAKKESMOD_PLUGIN(flightplugin, "Flight plugin", "1.0.0", PLUGINTYPE_FREEPLAY)
@@ -42,12 +43,14 @@ void flightplugin::onLoad()
 	up_scalar = make_shared<float>(0.f);
 	forceMode = make_shared<int>(0);
 
+	pre = std::make_shared<Preset>(Preset(1.f,1.f, 0.f, 1.f,1.f,1.f,0.f,0.f,0.f,0.f,0.f,0.f,0.f,1.f));
 	gameWrapper->HookEvent("Function TAGame.GameEvent_Tutorial_TA.OnInit", bind(&flightplugin::OnFreeplayLoad, this, std::placeholders::_1));
 	gameWrapper->HookEvent("Function TAGame.GameEvent_Tutorial_TA.Destroyed", bind(&flightplugin::OnFreeplayDestroy, this, std::placeholders::_1));
-
 	cvarManager->registerCvar("flight_enabled", "0", "Enables/disable flight lift functionality", true, true, 0.f, true, 1.f)
 		.addOnValueChanged(std::bind(&flightplugin::OnEnabledChanged, this, std::placeholders::_1, std::placeholders::_2));
 	cvarManager->getCvar("flight_enabled").bindTo(enabled);
+	cvarManager->registerCvar("flightplugin_preset", "0", "Presets for slider values", true, true, 0, true, 2000)
+		.addOnValueChanged(bind(&flightplugin::OnEnabledChanged, this, std::placeholders::_1, std::placeholders::_2));
 	cvarManager->registerCvar("no_sticky", "0", "Enables/disable flight lift functionality", true, true, 0.f, true, 1.f).bindTo(no_sticky);
 	cvarManager->registerCvar("air_density", "0", "Air Density", true, true, 0.f, true, 1.f, true).bindTo(rho);
 	cvarManager->registerCvar("air_density", "0", "Air Density", true, true, 0.f, true, 1.f, true).bindTo(rho);
@@ -91,6 +94,7 @@ void flightplugin::OnFreeplayDestroy(std::string eventName)
 }
 void flightplugin::OnEnabledChanged(std::string oldValue, CVarWrapper cvar)
 {
+	auto cvarName = cvar.getCVarName();
 	if (cvar.getBoolValue() && gameWrapper->IsInFreeplay())
 	{
 		gameWrapper->HookEventWithCaller<CarWrapper>("Function TAGame.Car_TA.SetVehicleInput",
@@ -100,6 +104,26 @@ void flightplugin::OnEnabledChanged(std::string oldValue, CVarWrapper cvar)
 	{
 		cvarManager->log("Flight disabled");
 		gameWrapper->UnhookEvent("Function TAGame.RBActor_TA.PreAsyncTick");
+	}
+	cvarManager->log("Logging: " + cvarName);
+	if (cvarName == "flightplugin_preset" && cvar.getIntValue() >= 0)
+	{
+		Preset tmp = pre->FillPreset(cvar.getIntValue());
+		cvarManager->executeCommand("max_speed " + sp::to_string(tmp[0], 5), false);
+		cvarManager->executeCommand("boost_power " + sp::to_string(tmp[1], 5), false);
+		cvarManager->executeCommand("air_density " + sp::to_string(tmp[2], 5), false);
+		cvarManager->executeCommand("car_length " + sp::to_string(tmp[3], 5), false);
+		cvarManager->executeCommand("car_width " + sp::to_string(tmp[4], 5), false);
+		cvarManager->executeCommand("car_height " + sp::to_string(tmp[5], 5), false);
+		cvarManager->executeCommand("drag_x " + sp::to_string(tmp[6], 5), false);
+		cvarManager->executeCommand("drag_y " + sp::to_string(tmp[7], 5), false);
+		cvarManager->executeCommand("drag_z " + sp::to_string(tmp[8], 5), false);
+		cvarManager->executeCommand("stabilize_pitch " + sp::to_string(tmp[9], 5), false);
+		cvarManager->executeCommand("stabilize_roll " + sp::to_string(tmp[10], 5), false);
+		cvarManager->executeCommand("stabilize_yaw " + sp::to_string(tmp[11], 5), false);
+		cvarManager->executeCommand("lift " + sp::to_string(tmp[12], 5), false);
+		cvarManager->executeCommand("no_sticky " + sp::bool_to_string((bool)tmp[13]), false);
+		cvarManager->log("Changed some stuff");
 	}
 }
 Vector flightplugin::reflect_v1_on_v2(Vector incident, Vector n_unit)
