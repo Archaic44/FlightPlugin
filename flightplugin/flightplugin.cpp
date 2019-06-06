@@ -65,7 +65,7 @@ void flightplugin::onLoad()
 	cvarManager->registerCvar("stabilize_yaw", "0", "Scales Yaw Stabilization", true, true, 0.f, true, 10.f, true).bindTo(yaw_scalar);
 	cvarManager->registerCvar("lift", "0", "Scales Up/Down Lift", true, true, 0.f, true, 10.f, true).bindTo(up_scalar);
 	cvarManager->registerCvar("boost_power", "1", "Boost Power Multiplier", true, true, 0.f, true, 10.f).bindTo(boost);
-	cvarManager->registerCvar("max_speed", "1", "Terminal Velocity Multiplier", true, true, 0.f, true, 10.f).bindTo(max_speed);
+	cvarManager->registerCvar("max_speed", "1", "Terminal Velocity Multiplier", true, true, 0.000499, true, 10.f).bindTo(max_speed);
 
 	logger.cvarManager = this->cvarManager;
 	cmdManager.cvarManager = this->cvarManager;
