@@ -28,6 +28,7 @@ namespace sp
 	}
 
 	std::string vector_to_string(Vector v, int prec = 2);
+	std::string vector2_to_string(Vector2 v, int prec = 2);
 	std::string rot_to_string(Rotator v, int prec = 8);
 	std::string quat_to_string(Quat v, int prec = 10);
 	std::string to_string(float f, int prec = 2);
