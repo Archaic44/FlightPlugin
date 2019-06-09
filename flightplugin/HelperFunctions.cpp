@@ -4,6 +4,10 @@ std::string sp::vector_to_string(Vector v, int prec)
 {
 	return to_string_decimals(v.X, prec) + ", " + to_string_decimals(v.Y, prec) + ", " + to_string_decimals(v.Z, prec);
 }
+std::string sp::vector2_to_string(Vector2 v, int prec)
+{
+	return to_string_decimals(v.X, prec) + ", " + to_string_decimals(v.Y, prec);
+}
 std::string sp::rot_to_string(Rotator v, int prec)
 {
 	return to_string_decimals(v.Pitch, prec) + ", " + to_string_decimals(v.Yaw, prec) + ", " + to_string_decimals(v.Roll, prec);

@@ -38,7 +38,7 @@ void Painter::drawPanels(CanvasWrapper cw)
 		}
 		if (cvarManager->getCvar("showSlider").getBoolValue())
 		{
-			drawSliderValues(cw, car, 1600, 510);
+			drawSliderValues(cw, car, 360, 550);
 		}
 	}
 }
@@ -154,39 +154,40 @@ void Painter::drawSliderValues(CanvasWrapper cw, CarWrapper car, int x, int y)
 	int vecSpacing = 70;
 	int quatSpacing = 120;
 	int lineSpacing = 30;
-	Vector2 pos = { x,y };
+	Vector2 monitor_size = cw.GetSize();
+	Vector2 pos = { monitor_size.X - x, monitor_size.Y-y };
 	cw.SetPosition(pos);
 	cw.SetColor(COLOR_PANEL);
 	Vector2 box = { 300, 280 };
 	cw.FillBox(box);
 	cw.SetColor(COLOR_TEXT);
 	cw.SetColor(205, 155, 15, 255);
-	this->drawStringAt(cw, "Slider Values", x + titleSpacing, y + marginTop);
+	this->drawStringAt(cw, "Slider Values", pos.X + titleSpacing, pos.Y + marginTop);
 	int currentLine = marginTop + 20;
 	cw.SetColor(255, 255, 255, 255);
-	this->drawStringAt(cw, "Max Speed: ", x + marginLeft, y + currentLine);
-	this->drawStringAt(cw, sp::to_string(speed, 3), x + marginLeft + nameSpacing, y + currentLine);
+	this->drawStringAt(cw, "Mapos.X Speed: ", pos.X + marginLeft, pos.Y + currentLine);
+	this->drawStringAt(cw, sp::to_string(speed, 3), pos.X + marginLeft + nameSpacing, pos.Y + currentLine);
 	currentLine += lineSpacing;
-	this->drawStringAt(cw, "Boost Power: ", x + marginLeft, y + currentLine);
-	this->drawStringAt(cw, sp::to_string(boost, 3), x + marginLeft + nameSpacing, y + currentLine);
+	this->drawStringAt(cw, "Boost Power: ", pos.X + marginLeft, pos.Y + currentLine);
+	this->drawStringAt(cw, sp::to_string(boost, 3), pos.X + marginLeft + nameSpacing, pos.Y + currentLine);
 	currentLine += lineSpacing;
-	this->drawStringAt(cw, "Air Density: ", x + marginLeft, y + currentLine);
-	this->drawStringAt(cw, sp::to_string(*shared->rho, 3), x + marginLeft + nameSpacing, y + currentLine);
+	this->drawStringAt(cw, "Air Densitpos.Y: ", pos.X + marginLeft, pos.Y + currentLine);
+	this->drawStringAt(cw, sp::to_string(*shared->rho, 3), pos.X + marginLeft + nameSpacing, pos.Y + currentLine);
 	currentLine += lineSpacing;
-	this->drawStringAt(cw, "Car LWH: ", x + marginLeft, y + currentLine);
-	this->drawStringAt(cw, sp::vector_to_string(car_dimensions, 3), x + marginLeft + nameSpacing, y + currentLine);
+	this->drawStringAt(cw, "Car LWH: ", pos.X + marginLeft, pos.Y + currentLine);
+	this->drawStringAt(cw, sp::vector_to_string(car_dimensions, 3), pos.X + marginLeft + nameSpacing, pos.Y + currentLine);
 	currentLine += lineSpacing;
-	this->drawStringAt(cw, "Drag: ", x + marginLeft, y + currentLine);
-	this->drawStringAt(cw, sp::vector_to_string(drag, 3), x + marginLeft + nameSpacing, y + currentLine);
+	this->drawStringAt(cw, "Drag: ", pos.X + marginLeft, pos.Y + currentLine);
+	this->drawStringAt(cw, sp::vector_to_string(drag, 3), pos.X + marginLeft + nameSpacing, pos.Y + currentLine);
 	currentLine += lineSpacing;
-	this->drawStringAt(cw, "Stabilization: ", x + marginLeft, y + currentLine);
-	this->drawStringAt(cw, sp::vector_to_string(stabilization, 3), x + marginLeft + nameSpacing, y + currentLine);
+	this->drawStringAt(cw, "Stabilization: ", pos.X + marginLeft, pos.Y + currentLine);
+	this->drawStringAt(cw, sp::vector_to_string(stabilization, 3), pos.X + marginLeft + nameSpacing, pos.Y + currentLine);
 	currentLine += lineSpacing;
-	this->drawStringAt(cw, "Lift: ", x + marginLeft, y + currentLine);
-	this->drawStringAt(cw, sp::to_string(lift, 3), x + marginLeft + nameSpacing, y + currentLine);
+	this->drawStringAt(cw, "Lift: ", pos.X + marginLeft, pos.Y + currentLine);
+	this->drawStringAt(cw, sp::to_string(lift, 3), pos.X + marginLeft + nameSpacing, pos.Y + currentLine);
 	currentLine += lineSpacing;
-	this->drawStringAt(cw, "Sticky Wheels: ", x + marginLeft, y + currentLine);
-	this->drawStringAt(cw, sticky ? "false" : "true", x + marginLeft + nameSpacing, y + currentLine);
+	this->drawStringAt(cw, "Sticky Wheels: ", pos.X + marginLeft, pos.Y + currentLine);
+	this->drawStringAt(cw, sticky ? "false" : "true", pos.X + marginLeft + nameSpacing, pos.Y + currentLine);
 
 }
 
@@ -237,6 +238,7 @@ void Painter::drawYawPlane(CanvasWrapper cw, CarWrapper car, int x, int y, float
 	cw.SetPosition(pos);
 	cw.SetColor(COLOR_PANEL);
 	Vector2 box = { width*scale, height*scale };
+	cw.FillBox(box);
 	cw.SetColor(COLOR_TEXT);
 	Vector2_ center(100, 100);
 	Vector2_ axisVer(0, -80);
