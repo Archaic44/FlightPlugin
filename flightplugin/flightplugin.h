@@ -37,6 +37,8 @@ public:
 	std::shared_ptr<float> up_scalar;
 	std::shared_ptr<int> forceMode;
 	std::shared_ptr<bool> enabled, no_sticky;
+	std::shared_ptr<float> weez;
+	std::shared_ptr<float> cvarThrottle;
 
 	void OnSetInput(CarWrapper cw, void* params, string funcName);
 	void OnFreeplayLoad(std::string eventName);

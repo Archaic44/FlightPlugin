@@ -3,6 +3,7 @@
 #include "flightplugin.h"
 #include "bakkesmod\wrappers\ArrayWrapper.h"
 #include "bakkesmod\wrappers\GameObject/CarWrapper.h"
+#include "bakkesmod\wrappers\GameObject\CarComponent\WheelWrapper.h"
 #include "bakkesmod\wrappers\CVarManagerWrapper.h"
 #include "bakkesmod\wrappers\CVarWrapper.h"
 #include "bakkesmod\wrappers\Engine\ActorWrapper.h"
@@ -28,22 +29,25 @@ void flightplugin::onLoad()
 {
 	enabled = make_shared<bool>(false);
 	no_sticky = make_shared<bool>(false);
-	rho = make_shared<float>(0.f);
-	boost = make_shared<float>(1.f);
-	max_speed = make_shared<float>(1.f);
-	length = make_shared<float>(1.f);
-	width = make_shared<float>(1.f);
-	height = make_shared<float>(1.f);
-	x_scalar = make_shared<float>(0.f);
-	y_scalar = make_shared<float>(0.f);
-	z_scalar = make_shared<float>(0.f);
-	pitch_scalar = make_shared<float>(0.f);
-	roll_scalar = make_shared<float>(0.f);
-	yaw_scalar = make_shared<float>(0.f);
-	up_scalar = make_shared<float>(0.f);
+	rho = make_shared<float>(0.016f);
+	boost = make_shared<float>(1.0f);
+	max_speed = make_shared<float>(1.0f);
+	length = make_shared<float>(1.0f);
+	width = make_shared<float>(1.0f);
+	height = make_shared<float>(1.0f);
+	x_scalar = make_shared<float>(0.5f);
+	y_scalar = make_shared<float>(0.5f);
+	z_scalar = make_shared<float>(0.5f);
+	pitch_scalar = make_shared<float>(0.0f);
+	roll_scalar = make_shared<float>(0.0f);
+	yaw_scalar = make_shared<float>(0.0f);
+	up_scalar = make_shared<float>(0.0f);
 	forceMode = make_shared<int>(0);
+	cvarThrottle = make_shared<float>(0.0f);
 
-	pre = std::make_shared<Preset>(Preset(1.f,1.f, 0.f, 1.f,1.f,1.f,0.f,0.f,0.f,0.f,0.f,0.f,0.f,1.f));
+
+
+	pre = std::make_shared<Preset>(Preset(1.0f,1.0f, 0.0f, 1.0f,1.0f,1.0f,0.0f,0.0f,0.0f,0.0f,0.0f,0.0f,0.0f,1.0f));
 	gameWrapper->HookEvent("Function TAGame.GameEvent_Tutorial_TA.OnInit", bind(&flightplugin::OnFreeplayLoad, this, std::placeholders::_1));
 	gameWrapper->HookEvent("Function TAGame.GameEvent_Tutorial_TA.Destroyed", bind(&flightplugin::OnFreeplayDestroy, this, std::placeholders::_1));
 	cvarManager->registerCvar("flight_enabled", "0", "Enables/disable flight lift functionality", true, true, 0.f, true, 1.f)
@@ -51,21 +55,21 @@ void flightplugin::onLoad()
 	cvarManager->getCvar("flight_enabled").bindTo(enabled);
 	cvarManager->registerCvar("flightplugin_preset", "0", "Presets for slider values", true, true, 0, true, 2000)
 		.addOnValueChanged(bind(&flightplugin::OnEnabledChanged, this, std::placeholders::_1, std::placeholders::_2));
-	cvarManager->registerCvar("no_sticky", "0", "Enables/disable flight lift functionality", true, true, 0.f, true, 1.f).bindTo(no_sticky);
-	cvarManager->registerCvar("air_density", "0", "Air Density", true, true, 0.f, true, 1.f, true).bindTo(rho);
-	cvarManager->registerCvar("air_density", "0", "Air Density", true, true, 0.f, true, 1.f, true).bindTo(rho);
+	//cvarManager->registerCvar("no_sticky", "0", "Enables/disable flight lift functionality", true, true, 0.f, true, 1.f).bindTo(no_sticky);
+	cvarManager->registerCvar("air_density", "0.016", "Air Density", true, true, 0.f, true, 1.f, true).bindTo(rho);
 	cvarManager->registerCvar("car_length", "1", "Car Length", true, true, 0.f, true, 10.f, true).bindTo(length);
 	cvarManager->registerCvar("car_width", "1", "Car Width", true, true, 0.f, true, 10.f, true).bindTo(width);
 	cvarManager->registerCvar("car_height", "1", "Car Height", true, true, 0.f, true, 10.f, true).bindTo(height);
-	cvarManager->registerCvar("drag_x", "0", "Scales Drag X", true, true, 0.f, true, 10.f, true).bindTo(x_scalar);
-	cvarManager->registerCvar("drag_y", "0", "Scales Drag Y", true, true, 0.f, true, 10.f, true).bindTo(y_scalar);
-	cvarManager->registerCvar("drag_z", "0", "Scales Drag Z", true, true, 0.f, true, 10.f, true).bindTo(z_scalar);
+	cvarManager->registerCvar("drag_x", "0.5", "Scales Drag X", true, true, 0.f, true, 10.f, true).bindTo(x_scalar);
+	cvarManager->registerCvar("drag_y", "0.5", "Scales Drag Y", true, true, 0.f, true, 10.f, true).bindTo(y_scalar);
+	cvarManager->registerCvar("drag_z", "0.5", "Scales Drag Z", true, true, 0.f, true, 10.f, true).bindTo(z_scalar);
 	cvarManager->registerCvar("stabilize_pitch", "0", "Scales Pitch Stabilization", true, true, 0.f, true, 10.f, true).bindTo(pitch_scalar);
 	cvarManager->registerCvar("stabilize_roll", "0", "Scales Roll Stabilization", true, true, 0.f, true, 10.f, true).bindTo(roll_scalar);
 	cvarManager->registerCvar("stabilize_yaw", "0", "Scales Yaw Stabilization", true, true, 0.f, true, 10.f, true).bindTo(yaw_scalar);
 	cvarManager->registerCvar("lift", "0", "Scales Up/Down Lift", true, true, 0.f, true, 10.f, true).bindTo(up_scalar);
 	cvarManager->registerCvar("boost_power", "1", "Boost Power Multiplier", true, true, 0.f, true, 10.f).bindTo(boost);
 	cvarManager->registerCvar("max_speed", "1", "Terminal Velocity Multiplier", true, true, 0.000499, true, 10.f).bindTo(max_speed);
+	cvarManager->registerCvar("defaultThrottle", "12000", "air throttle speed fast", true, true, 12000.f, true, 2000000.f, true).bindTo(cvarThrottle);
 
 	logger.cvarManager = this->cvarManager;
 	cmdManager.cvarManager = this->cvarManager;
@@ -78,6 +82,7 @@ void flightplugin::onLoad()
 	painter.shared = this;
 
 	painter.initDrawables();
+	
 }
 void flightplugin::onUnload()
 {
@@ -164,9 +169,9 @@ void flightplugin::OnSetInput(CarWrapper cw, void * params, string funcName)
 		Vector deflect_fwd = reflect_v1_on_v2(lin, fwd); // Simulate air bouncing off car front/back
 
 		// Resultant vector for car
-		Vector res_right = (deflect_right + lin)/(-2.f);
-		Vector res_up = (deflect_up + lin)/(-2.f);
-		Vector res_fwd = (deflect_fwd + lin)/(-2.f);
+		Vector res_right = (deflect_right + lin) / (-2.f);
+		Vector res_up = (deflect_up + lin) / (-2.f);
+		Vector res_fwd = (deflect_fwd + lin) / (-2.f);
 		float coef = (*rho); // Apply reduction in speed
 
 		Vector extent = car.GetLocalCollisionExtent();
@@ -187,7 +192,7 @@ void flightplugin::OnSetInput(CarWrapper cw, void * params, string funcName)
 		float flux_f = Vector::dot(deflect_fwd.norm(), fwd) * bumper;
 
 		// Scale resulting drag vector by flux and sliders
-		res_right = res_right * abs(flux_r *coef);
+		res_right = res_right * abs(flux_r * coef);
 		res_up = res_up * abs(flux_u * coef);
 		res_fwd = res_fwd * abs(flux_f * coef);
 		Vector result = res_up + res_fwd + res_right;
@@ -203,18 +208,40 @@ void flightplugin::OnSetInput(CarWrapper cw, void * params, string funcName)
 		Vector axis_of_rotation = Vector::cross(fwd, lin);
 		Vector rotation_scalars = Vector(*pitch_scalar, *roll_scalar, *yaw_scalar);
 		Vector tau = axis_of_rotation.norm() * rotation_scalars * coef;
-		car.SetAngularVelocity(tau,true);
+		car.SetAngularVelocity(tau, true);
 
 		/* Begin Lift Calculation*/
-		Vector up_lift = up * (*up_scalar) * Vector::dot(lin, fwd) *.001;
+		Vector up_lift = up * (*up_scalar) * Vector::dot(lin, fwd) * .001;
 		car.AddVelocity(up_lift);
 
 		car.SetMaxLinearSpeed(2300 * (*max_speed)); // 2300 is the OG max speed
 		car.SetMaxLinearSpeed2(2300 * (*max_speed));
-		car.GetBoostComponent().SetBoostForce(178500*(*boost)); //178500 is the OG BoostSpeed
-		if (*no_sticky)
-			car.SetStickyForce({ 0.f,0.f });
-		else
-			car.SetStickyForce({ 0.5,1.5 }); // OG values are  .5, 1.5 -- Ground/Wall
+		car.GetBoostComponent().SetBoostForce(178500 * (*boost)); //178500 is the OG BoostSpeed
+
+
+		/* oh neat */
+		Rotator defaultTorque = { 130, 95, 400 };
+
+		if (!gameWrapper->GetLocalCar().IsNull())
+		{
+			CarWrapper car = gameWrapper->GetLocalCar();
+			AirControlComponentWrapper acc = car.GetAirControlComponent();
+			acc.SetThrottleForce(*cvarThrottle);
+			float speedTorqueRatio = 1300 / speed;
+			Rotator newTorque = (defaultTorque * speedTorqueRatio);
+			acc.SetAirTorque(newTorque);
+
+			/*Auto Stickywheels*/
+			bool grounded = car.IsOnGround();
+			if (grounded && speed >= 1300)
+			{
+				car.SetStickyForce({ 0.f,0.f });
+			}
+			else
+			{
+				car.SetStickyForce({ 0.5,1.5 }); // OG values are  .5, 1.5 -- Ground/Wall
+				acc.SetAirTorque(defaultTorque);
+			}
+		}
 	}
 }
