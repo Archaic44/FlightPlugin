@@ -1,0 +1,53 @@
+Flight Plugin
+9|The following sliders affect drag, angular stabilization, lift, and the car's hitbox.
+0|Load Plugin|plugin load flightplugin
+7
+0|Unload Plugin|plugin unload flightplugin
+7
+0|Enable Flight|fp_enabled 1
+7
+0|Disable Flight|fp_enabled 0
+6|Flight Presets|fp_preset|Default@0&Digby@1
+4|Max Speed|fp_speed|0|10
+7
+0|Reset##m|fp_speed 1
+4|Boost Power|fp_boost|0|10
+7
+0|Reset##n|fp_boost 1
+4|Air Density|fp_air_density|0|1
+7
+0|Reset##a|fp_air_density 0
+4|Car Length|fp_length|0|10
+7
+0|Reset##b|fp_length 1
+4|Car Width|fp_width|0|10
+7
+0|Reset##c|fp_width 1
+4|Car Height|fp_height|0|10
+7
+0|Reset##d|fp_height 1
+4|X Drag|fp_drag_x|0|10
+7
+0|Reset##e|fp_drag_x 0
+4|Y Drag|fp_drag_y|0|10
+7
+0|Reset##f|fp_drag_y 0
+4|Z Drag|fp_drag_z|0|10
+7
+0|Reset##g|fp_drag_z 0
+4|Pitch Stabilization|fp_pitch|0|10
+7
+0|Reset##h|fp_pitch 0
+4|Roll Stabilization|fp_roll|0|10
+7
+0|Reset##i|fp_roll 0
+4|Yaw Stabilization|fp_yaw|0|10
+7
+0|Reset##j|stabilize_yaw 0
+4|Lift|fp_lift|0|10
+7
+0|Reset##l|fp_lift 0
+4|Air Throttle|fp_defaultThrottle|12000|2000000
+7
+0|Reset##o|fp_defaultThrottle 12000
+9|This plugin was authored by Digby Deathstar and jsonV

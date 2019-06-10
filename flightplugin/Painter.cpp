@@ -141,9 +141,8 @@ void Painter::drawSliderValues(CanvasWrapper cw, CarWrapper car, int x, int y)
 {
 	flightplugin* s = shared;
 	Vector car_dimensions = Vector(*s->length, *s->width, *s->height);
-	Vector drag = Vector(*s->x_scalar, *s->y_scalar, *s->z_scalar);
+	Vector drag = Vector(*s->x_drag, *s->y_drag, *s->z_drag);
 	Vector stabilization = Vector(*s->pitch_scalar, *s->roll_scalar, *s->yaw_scalar);
-	bool sticky = *s->no_sticky;
 	float lift =*s->up_scalar;
 	float boost = *s->boost;
 	float speed = *s->max_speed;
@@ -165,13 +164,13 @@ void Painter::drawSliderValues(CanvasWrapper cw, CarWrapper car, int x, int y)
 	this->drawStringAt(cw, "Slider Values", pos.X + titleSpacing, pos.Y + marginTop);
 	int currentLine = marginTop + 20;
 	cw.SetColor(255, 255, 255, 255);
-	this->drawStringAt(cw, "Mapos.X Speed: ", pos.X + marginLeft, pos.Y + currentLine);
+	this->drawStringAt(cw, "MaxWel Speed: ", pos.X + marginLeft, pos.Y + currentLine);
 	this->drawStringAt(cw, sp::to_string(speed, 3), pos.X + marginLeft + nameSpacing, pos.Y + currentLine);
 	currentLine += lineSpacing;
 	this->drawStringAt(cw, "Boost Power: ", pos.X + marginLeft, pos.Y + currentLine);
 	this->drawStringAt(cw, sp::to_string(boost, 3), pos.X + marginLeft + nameSpacing, pos.Y + currentLine);
 	currentLine += lineSpacing;
-	this->drawStringAt(cw, "Air Densitpos.Y: ", pos.X + marginLeft, pos.Y + currentLine);
+	this->drawStringAt(cw, "Air Density: ", pos.X + marginLeft, pos.Y + currentLine);
 	this->drawStringAt(cw, sp::to_string(*shared->rho, 3), pos.X + marginLeft + nameSpacing, pos.Y + currentLine);
 	currentLine += lineSpacing;
 	this->drawStringAt(cw, "Car LWH: ", pos.X + marginLeft, pos.Y + currentLine);
@@ -185,10 +184,6 @@ void Painter::drawSliderValues(CanvasWrapper cw, CarWrapper car, int x, int y)
 	currentLine += lineSpacing;
 	this->drawStringAt(cw, "Lift: ", pos.X + marginLeft, pos.Y + currentLine);
 	this->drawStringAt(cw, sp::to_string(lift, 3), pos.X + marginLeft + nameSpacing, pos.Y + currentLine);
-	currentLine += lineSpacing;
-	this->drawStringAt(cw, "Sticky Wheels: ", pos.X + marginLeft, pos.Y + currentLine);
-	this->drawStringAt(cw, sticky ? "false" : "true", pos.X + marginLeft + nameSpacing, pos.Y + currentLine);
-
 }
 
 Vector Painter::Rotate(Vector aVec, double roll, double yaw, double pitch)

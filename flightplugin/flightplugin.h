@@ -32,11 +32,11 @@ public:
 	std::shared_ptr<float> rho;
 	std::shared_ptr<float> boost, max_speed;
 	std::shared_ptr<float> length, width, height;
-	std::shared_ptr<float> x_scalar, y_scalar, z_scalar;
+	std::shared_ptr<float> x_drag, y_drag, z_drag;
 	std::shared_ptr<float> pitch_scalar, roll_scalar, yaw_scalar;
 	std::shared_ptr<float> up_scalar;
 	std::shared_ptr<int> forceMode;
-	std::shared_ptr<bool> enabled, no_sticky;
+	std::shared_ptr<bool> enabled;
 	std::shared_ptr<float> weez;
 	std::shared_ptr<float> cvarThrottle;
 

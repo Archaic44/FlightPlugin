@@ -21,23 +21,22 @@
 #include "Preset.h"
 
 
-BAKKESMOD_PLUGIN(flightplugin, "Flight plugin", "1.0.0", PLUGINTYPE_FREEPLAY)
+BAKKESMOD_PLUGIN(flightplugin, "Flight plugin", "1.0.0", PLUGINTYPE_FREEPLAY | PLUGINTYPE_CUSTOM_TRAINING)
 
 using namespace sp;
 
 void flightplugin::onLoad()
 {
 	enabled = make_shared<bool>(false);
-	no_sticky = make_shared<bool>(false);
-	rho = make_shared<float>(0.016f);
+	rho = make_shared<float>(0.0f);
 	boost = make_shared<float>(1.0f);
 	max_speed = make_shared<float>(1.0f);
 	length = make_shared<float>(1.0f);
 	width = make_shared<float>(1.0f);
 	height = make_shared<float>(1.0f);
-	x_scalar = make_shared<float>(0.5f);
-	y_scalar = make_shared<float>(0.5f);
-	z_scalar = make_shared<float>(0.5f);
+	x_drag = make_shared<float>(0.f);
+	y_drag = make_shared<float>(0.f);
+	z_drag = make_shared<float>(0.f);
 	pitch_scalar = make_shared<float>(0.0f);
 	roll_scalar = make_shared<float>(0.0f);
 	yaw_scalar = make_shared<float>(0.0f);
@@ -50,26 +49,25 @@ void flightplugin::onLoad()
 	pre = std::make_shared<Preset>(Preset(1.0f,1.0f, 0.0f, 1.0f,1.0f,1.0f,0.0f,0.0f,0.0f,0.0f,0.0f,0.0f,0.0f,1.0f));
 	gameWrapper->HookEvent("Function TAGame.GameEvent_Tutorial_TA.OnInit", bind(&flightplugin::OnFreeplayLoad, this, std::placeholders::_1));
 	gameWrapper->HookEvent("Function TAGame.GameEvent_Tutorial_TA.Destroyed", bind(&flightplugin::OnFreeplayDestroy, this, std::placeholders::_1));
-	cvarManager->registerCvar("flight_enabled", "0", "Enables/disable flight lift functionality", true, true, 0.f, true, 1.f)
+	cvarManager->registerCvar("fp_enabled", "0", "Enables/disable flight lift functionality", true, true, 0.f, true, 1.f)
 		.addOnValueChanged(std::bind(&flightplugin::OnEnabledChanged, this, std::placeholders::_1, std::placeholders::_2));
-	cvarManager->getCvar("flight_enabled").bindTo(enabled);
-	cvarManager->registerCvar("flightplugin_preset", "0", "Presets for slider values", true, true, 0, true, 2000)
+	cvarManager->getCvar("fp_enabled").bindTo(enabled);
+	cvarManager->registerCvar("fp_preset", "0", "Presets for slider values", true, true, 0, true, 2000)
 		.addOnValueChanged(bind(&flightplugin::OnEnabledChanged, this, std::placeholders::_1, std::placeholders::_2));
-	//cvarManager->registerCvar("no_sticky", "0", "Enables/disable flight lift functionality", true, true, 0.f, true, 1.f).bindTo(no_sticky);
-	cvarManager->registerCvar("air_density", "0.016", "Air Density", true, true, 0.f, true, 1.f, true).bindTo(rho);
-	cvarManager->registerCvar("car_length", "1", "Car Length", true, true, 0.f, true, 10.f, true).bindTo(length);
-	cvarManager->registerCvar("car_width", "1", "Car Width", true, true, 0.f, true, 10.f, true).bindTo(width);
-	cvarManager->registerCvar("car_height", "1", "Car Height", true, true, 0.f, true, 10.f, true).bindTo(height);
-	cvarManager->registerCvar("drag_x", "0.5", "Scales Drag X", true, true, 0.f, true, 10.f, true).bindTo(x_scalar);
-	cvarManager->registerCvar("drag_y", "0.5", "Scales Drag Y", true, true, 0.f, true, 10.f, true).bindTo(y_scalar);
-	cvarManager->registerCvar("drag_z", "0.5", "Scales Drag Z", true, true, 0.f, true, 10.f, true).bindTo(z_scalar);
-	cvarManager->registerCvar("stabilize_pitch", "0", "Scales Pitch Stabilization", true, true, 0.f, true, 10.f, true).bindTo(pitch_scalar);
-	cvarManager->registerCvar("stabilize_roll", "0", "Scales Roll Stabilization", true, true, 0.f, true, 10.f, true).bindTo(roll_scalar);
-	cvarManager->registerCvar("stabilize_yaw", "0", "Scales Yaw Stabilization", true, true, 0.f, true, 10.f, true).bindTo(yaw_scalar);
-	cvarManager->registerCvar("lift", "0", "Scales Up/Down Lift", true, true, 0.f, true, 10.f, true).bindTo(up_scalar);
-	cvarManager->registerCvar("boost_power", "1", "Boost Power Multiplier", true, true, 0.f, true, 10.f).bindTo(boost);
-	cvarManager->registerCvar("max_speed", "1", "Terminal Velocity Multiplier", true, true, 0.000499, true, 10.f).bindTo(max_speed);
-	cvarManager->registerCvar("defaultThrottle", "12000", "air throttle speed fast", true, true, 12000.f, true, 2000000.f, true).bindTo(cvarThrottle);
+	cvarManager->registerCvar("fp_air_density", "0", "Air Density", true, true, 0.f, true, 1.f, true).bindTo(rho);
+	cvarManager->registerCvar("fp_length", "1", "Car Length", true, true, 0.f, true, 10.f, true).bindTo(length);
+	cvarManager->registerCvar("fp_width", "1", "Car Width", true, true, 0.f, true, 10.f, true).bindTo(width);
+	cvarManager->registerCvar("fp_height", "1", "Car Height", true, true, 0.f, true, 10.f, true).bindTo(height);
+	cvarManager->registerCvar("fp_drag_x", "0", "Scales Drag X", true, true, 0.f, true, 10.f, true).bindTo(x_drag);
+	cvarManager->registerCvar("fp_drag_y", "0", "Scales Drag Y", true, true, 0.f, true, 10.f, true).bindTo(y_drag);
+	cvarManager->registerCvar("fp_drag_z", "0", "Scales Drag Z", true, true, 0.f, true, 10.f, true).bindTo(z_drag);
+	cvarManager->registerCvar("fp_pitch", "0", "Scales Pitch Stabilization", true, true, 0.f, true, 10.f, true).bindTo(pitch_scalar);
+	cvarManager->registerCvar("fp_roll", "0", "Scales Roll Stabilization", true, true, 0.f, true, 10.f, true).bindTo(roll_scalar);
+	cvarManager->registerCvar("fp_yaw", "0", "Scales Yaw Stabilization", true, true, 0.f, true, 10.f, true).bindTo(yaw_scalar);
+	cvarManager->registerCvar("fp_lift", "0", "Scales Up/Down Lift", true, true, 0.f, true, 10.f, true).bindTo(up_scalar);
+	cvarManager->registerCvar("fp_boost", "1", "Boost Power Multiplier", true, true, 0.f, true, 10.f).bindTo(boost);
+	cvarManager->registerCvar("fp_speed", "1", "Terminal Velocity Multiplier", true, true, 0.000499, true, 10.f).bindTo(max_speed);
+	cvarManager->registerCvar("fp_defaultThrottle", "12000", "air throttle speed fast", true, true, 12000.f, true, 2000000.f, true).bindTo(cvarThrottle);
 
 	logger.cvarManager = this->cvarManager;
 	cmdManager.cvarManager = this->cvarManager;
@@ -96,6 +94,7 @@ void flightplugin::OnFreeplayLoad(std::string eventName)
 void flightplugin::OnFreeplayDestroy(std::string eventName)
 {
 	gameWrapper->UnhookEvent("Function TAGame.RBActor_TA.PreAsyncTick");
+	gameWrapper->UnregisterDrawables();
 }
 void flightplugin::OnEnabledChanged(std::string oldValue, CVarWrapper cvar)
 {
@@ -110,25 +109,22 @@ void flightplugin::OnEnabledChanged(std::string oldValue, CVarWrapper cvar)
 		cvarManager->log("Flight disabled");
 		gameWrapper->UnhookEvent("Function TAGame.RBActor_TA.PreAsyncTick");
 	}
-	cvarManager->log("Logging: " + cvarName);
-	if (cvarName == "flightplugin_preset" && cvar.getIntValue() >= 0)
+	if (cvarName == "fp_preset" && cvar.getIntValue() >= 0)
 	{
 		Preset tmp = pre->FillPreset(cvar.getIntValue());
-		cvarManager->executeCommand("max_speed " + sp::to_string(tmp[0], 5), false);
-		cvarManager->executeCommand("boost_power " + sp::to_string(tmp[1], 5), false);
-		cvarManager->executeCommand("air_density " + sp::to_string(tmp[2], 5), false);
-		cvarManager->executeCommand("car_length " + sp::to_string(tmp[3], 5), false);
-		cvarManager->executeCommand("car_width " + sp::to_string(tmp[4], 5), false);
-		cvarManager->executeCommand("car_height " + sp::to_string(tmp[5], 5), false);
-		cvarManager->executeCommand("drag_x " + sp::to_string(tmp[6], 5), false);
-		cvarManager->executeCommand("drag_y " + sp::to_string(tmp[7], 5), false);
-		cvarManager->executeCommand("drag_z " + sp::to_string(tmp[8], 5), false);
-		cvarManager->executeCommand("stabilize_pitch " + sp::to_string(tmp[9], 5), false);
-		cvarManager->executeCommand("stabilize_roll " + sp::to_string(tmp[10], 5), false);
-		cvarManager->executeCommand("stabilize_yaw " + sp::to_string(tmp[11], 5), false);
-		cvarManager->executeCommand("lift " + sp::to_string(tmp[12], 5), false);
-		cvarManager->executeCommand("no_sticky " + sp::bool_to_string((bool)tmp[13]), false);
-		cvarManager->log("Changed some stuff");
+		cvarManager->executeCommand("fp_speed " + sp::to_string(tmp[0], 5), false);
+		cvarManager->executeCommand("fp_boost " + sp::to_string(tmp[1], 5), false);
+		cvarManager->executeCommand("fp_air_density " + sp::to_string(tmp[2], 5), false);
+		cvarManager->executeCommand("fp_length " + sp::to_string(tmp[3], 5), false);
+		cvarManager->executeCommand("fp_width " + sp::to_string(tmp[4], 5), false);
+		cvarManager->executeCommand("fp_height " + sp::to_string(tmp[5], 5), false);
+		cvarManager->executeCommand("fp_drag_x " + sp::to_string(tmp[6], 5), false);
+		cvarManager->executeCommand("fp_drag_y " + sp::to_string(tmp[7], 5), false);
+		cvarManager->executeCommand("fp_drag_z " + sp::to_string(tmp[8], 5), false);
+		cvarManager->executeCommand("fp_pitch " + sp::to_string(tmp[9], 5), false);
+		cvarManager->executeCommand("fp_roll " + sp::to_string(tmp[10], 5), false);
+		cvarManager->executeCommand("fp_yaw " + sp::to_string(tmp[11], 5), false);
+		cvarManager->executeCommand("fp_lift " + sp::to_string(tmp[12], 5), false);
 	}
 }
 Vector flightplugin::reflect_v1_on_v2(Vector incident, Vector n_unit)
@@ -196,12 +192,9 @@ void flightplugin::OnSetInput(CarWrapper cw, void * params, string funcName)
 		res_up = res_up * abs(flux_u * coef);
 		res_fwd = res_fwd * abs(flux_f * coef);
 		Vector result = res_up + res_fwd + res_right;
-		float scaleX = (*x_scalar);
-		float scaleY = (*y_scalar);
-		float scaleZ = (*z_scalar);
-		result.X *= scaleX;
-		result.Y *= scaleY;
-		result.Z *= scaleZ;
+		result.X *= (*x_drag);
+		result.Y *= (*y_drag);
+		result.Z *= (*z_drag);
 		car.AddVelocity(result);
 
 		/* Begin Stabilization Calculation */
