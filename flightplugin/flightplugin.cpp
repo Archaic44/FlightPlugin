@@ -21,7 +21,7 @@
 #include "Preset.h"
 
 
-BAKKESMOD_PLUGIN(flightplugin, "Flight plugin", "1.0.0", PLUGINTYPE_FREEPLAY | PLUGINTYPE_CUSTOM_TRAINING)
+BAKKESMOD_PLUGIN(flightplugin, "Flight plugin", "1.0.0", PLUGINTYPE_FREEPLAY)
 
 using namespace sp;
 
@@ -43,12 +43,8 @@ void flightplugin::onLoad()
 	up_scalar = make_shared<float>(0.0f);
 	forceMode = make_shared<int>(0);
 	cvarThrottle = make_shared<float>(0.0f);
-
-
-
 	pre = std::make_shared<Preset>(Preset(1.0f,1.0f, 0.0f, 1.0f,1.0f,1.0f,0.0f,0.0f,0.0f,0.0f,0.0f,0.0f,0.0f,1.0f));
-	gameWrapper->HookEvent("Function TAGame.GameEvent_Tutorial_TA.OnInit", bind(&flightplugin::OnFreeplayLoad, this, std::placeholders::_1));
-	gameWrapper->HookEvent("Function TAGame.GameEvent_Tutorial_TA.Destroyed", bind(&flightplugin::OnFreeplayDestroy, this, std::placeholders::_1));
+	
 	cvarManager->registerCvar("fp_enabled", "0", "Enables/disable flight lift functionality", true, true, 0.f, true, 1.f)
 		.addOnValueChanged(std::bind(&flightplugin::OnEnabledChanged, this, std::placeholders::_1, std::placeholders::_2));
 	cvarManager->getCvar("fp_enabled").bindTo(enabled);
@@ -70,17 +66,22 @@ void flightplugin::onLoad()
 	cvarManager->registerCvar("fp_defaultThrottle", "12000", "air throttle speed fast", true, true, 12000.f, true, 2000000.f, true).bindTo(cvarThrottle);
 
 	logger.cvarManager = this->cvarManager;
+
 	cmdManager.cvarManager = this->cvarManager;
 	cmdManager.gameWrapper = this->gameWrapper;
-
 	cmdManager.addCommands();
 
 	painter.gameWrapper = this->gameWrapper;
 	painter.cvarManager = this->cvarManager;
 	painter.shared = this;
-
 	painter.initDrawables();
-	
+
+	gameWrapper->HookEvent("Function TAGame.Mutator_Freeplay_TA.Init", bind(&flightplugin::OnFreeplayLoad, this, std::placeholders::_1));
+	gameWrapper->HookEvent("Function TAGame.GameEvent_Soccar_TA.Destroyed", bind(&flightplugin::OnFreeplayDestroy, this, std::placeholders::_1));
+	gameWrapper->HookEvent("Function TAGame.GameEvent_TrainingEditor_TA.StartPlayTest", bind(&flightplugin::OnFreeplayLoad, this, std::placeholders::_1));
+	gameWrapper->HookEvent("Function TAGame.GameEvent_TrainingEditor_TA.Destroyed", bind(&flightplugin::OnFreeplayDestroy, this, std::placeholders::_1));
+	gameWrapper->HookEvent("Function TAGame.GameInfo_Soccar_TA.InitGameEvent", bind(&flightplugin::OnFreeplayLoad, this, std::placeholders::_1));
+	gameWrapper->HookEvent("Function TAGame.GameInfo_Soccar_TA.HandleMainEventDestroyed", bind(&flightplugin::OnFreeplayDestroy, this, std::placeholders::_1));
 }
 void flightplugin::onUnload()
 {
@@ -88,28 +89,36 @@ void flightplugin::onUnload()
 void flightplugin::OnFreeplayLoad(std::string eventName)
 {
 	if (*enabled)
+	{
 		gameWrapper->HookEventWithCaller<CarWrapper>("Function TAGame.Car_TA.SetVehicleInput",
 			bind(&flightplugin::OnSetInput, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3));
+	}
+	else 
+	{
+		gameWrapper->UnregisterDrawables();
+		gameWrapper->UnhookEvent("Function TAGame.Car_TA.SetVehicleInput");
+	}
 }
 void flightplugin::OnFreeplayDestroy(std::string eventName)
 {
-	gameWrapper->UnhookEvent("Function TAGame.RBActor_TA.PreAsyncTick");
+	gameWrapper->UnhookEvent("Function TAGame.Car_TA.SetVehicleInput");
 	gameWrapper->UnregisterDrawables();
 }
 void flightplugin::OnEnabledChanged(std::string oldValue, CVarWrapper cvar)
 {
 	auto cvarName = cvar.getCVarName();
-	if (cvar.getBoolValue() && gameWrapper->IsInFreeplay())
+	bool inSafe = gameWrapper->IsInFreeplay() | gameWrapper->IsInCustomTraining() | gameWrapper->IsInGame();
+
+	if (cvar.getBoolValue() && cvarName == "fp_enabled" && inSafe)
 	{
 		gameWrapper->HookEventWithCaller<CarWrapper>("Function TAGame.Car_TA.SetVehicleInput",
 			bind(&flightplugin::OnSetInput, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3));
 	}
-	else
+	else if (!cvar.getBoolValue() && cvarName == "fp_enabled")
 	{
-		cvarManager->log("Flight disabled");
-		gameWrapper->UnhookEvent("Function TAGame.RBActor_TA.PreAsyncTick");
+		gameWrapper->UnhookEvent("Function TAGame.Car_TA.SetVehicleInput");
 	}
-	if (cvarName == "fp_preset" && cvar.getIntValue() >= 0)
+	else if (cvarName == "fp_preset" && cvar.getIntValue() >= 0)
 	{
 		Preset tmp = pre->FillPreset(cvar.getIntValue());
 		cvarManager->executeCommand("fp_speed " + sp::to_string(tmp[0], 5), false);
@@ -125,6 +134,12 @@ void flightplugin::OnEnabledChanged(std::string oldValue, CVarWrapper cvar)
 		cvarManager->executeCommand("fp_roll " + sp::to_string(tmp[10], 5), false);
 		cvarManager->executeCommand("fp_yaw " + sp::to_string(tmp[11], 5), false);
 		cvarManager->executeCommand("fp_lift " + sp::to_string(tmp[12], 5), false);
+		cvarManager->executeCommand("fp_defaultThrottle " + sp::to_string(tmp[13], 5), false);
+	}
+	else
+	{
+		gameWrapper->UnhookEvent("Function TAGame.Car_TA.SetVehicleInput");
+		gameWrapper->UnregisterDrawables();
 	}
 }
 Vector flightplugin::reflect_v1_on_v2(Vector incident, Vector n_unit)
@@ -142,14 +157,15 @@ Vector flightplugin::reflect_v1_on_v2(Vector incident, Vector n_unit)
 }
 void flightplugin::OnSetInput(CarWrapper cw, void * params, string funcName)
 {
-	if (gameWrapper->IsInFreeplay() && *enabled)
+	if (gameWrapper->IsInFreeplay() && *enabled && !cw.IsNull() && !cw.GetBoostComponent().IsNull())
 	{
 		/* Definitions */
 		auto car = cw;
 		RBState rbstate = car.GetRBState();
 		Vector loc = rbstate.Location;
 		Vector lin = rbstate.LinearVelocity; // Car velocity with respect to world
-		Vector v_unit = lin.norm();
+		Vector v_unit = lin.clone();
+		v_unit.normalize();
 		Vector ang = rbstate.AngularVelocity;
 		float speed = lin.magnitude();
 		Quat quat = rbstate.Quaternion;
@@ -163,6 +179,10 @@ void flightplugin::OnSetInput(CarWrapper cw, void * params, string funcName)
 		Vector deflect_right = reflect_v1_on_v2(lin, right); // Simulate air bouncing off car left/right
 		Vector deflect_up = reflect_v1_on_v2(lin, up); // Simulate air bouncing off car roof/bottom
 		Vector deflect_fwd = reflect_v1_on_v2(lin, fwd); // Simulate air bouncing off car front/back
+		Vector d_r = deflect_right.clone();
+		Vector d_u = deflect_up.clone();
+		Vector d_f = deflect_fwd.clone();
+		d_r.normalize(), d_u.normalize(), d_f.normalize();
 
 		// Resultant vector for car
 		Vector res_right = (deflect_right + lin) / (-2.f);
@@ -183,9 +203,9 @@ void flightplugin::OnSetInput(CarWrapper cw, void * params, string funcName)
 		float roof = roof_area / total_area;
 		float door = door_area / total_area;
 		float bumper = bumper_area / total_area;
-		float flux_r = Vector::dot(deflect_right.norm(), right) * door;
-		float flux_u = Vector::dot(deflect_up.norm(), up) * roof;
-		float flux_f = Vector::dot(deflect_fwd.norm(), fwd) * bumper;
+		float flux_r = Vector::dot(d_r, right) * door;
+		float flux_u = Vector::dot(d_u, up) * roof;
+		float flux_f = Vector::dot(d_f, fwd) * bumper;
 
 		// Scale resulting drag vector by flux and sliders
 		res_right = res_right * abs(flux_r * coef);
@@ -199,8 +219,10 @@ void flightplugin::OnSetInput(CarWrapper cw, void * params, string funcName)
 
 		/* Begin Stabilization Calculation */
 		Vector axis_of_rotation = Vector::cross(fwd, lin);
+		Vector a_o_r = axis_of_rotation.clone();
+		a_o_r.normalize();
 		Vector rotation_scalars = Vector(*pitch_scalar, *roll_scalar, *yaw_scalar);
-		Vector tau = axis_of_rotation.norm() * rotation_scalars * coef;
+		Vector tau = a_o_r * rotation_scalars * coef;
 		car.SetAngularVelocity(tau, true);
 
 		/* Begin Lift Calculation*/
@@ -215,26 +237,22 @@ void flightplugin::OnSetInput(CarWrapper cw, void * params, string funcName)
 		/* oh neat */
 		Rotator defaultTorque = { 130, 95, 400 };
 
-		if (!gameWrapper->GetLocalCar().IsNull())
-		{
-			CarWrapper car = gameWrapper->GetLocalCar();
-			AirControlComponentWrapper acc = car.GetAirControlComponent();
-			acc.SetThrottleForce(*cvarThrottle);
-			float speedTorqueRatio = 1300 / speed;
-			Rotator newTorque = (defaultTorque * speedTorqueRatio);
-			acc.SetAirTorque(newTorque);
+		AirControlComponentWrapper acc = car.GetAirControlComponent();
+		acc.SetThrottleForce(*cvarThrottle);
+		float speedTorqueRatio = 1300 / speed;
+		Rotator newTorque = (defaultTorque * speedTorqueRatio);
+		acc.SetAirTorque(newTorque);
 
-			/*Auto Stickywheels*/
-			bool grounded = car.IsOnGround();
-			if (grounded && speed >= 1300)
-			{
-				car.SetStickyForce({ 0.f,0.f });
-			}
-			else
-			{
-				car.SetStickyForce({ 0.5,1.5 }); // OG values are  .5, 1.5 -- Ground/Wall
-				acc.SetAirTorque(defaultTorque);
-			}
+		/*Auto Stickywheels*/
+		bool grounded = car.IsOnGround();
+		if (grounded && speed >= 1300)
+		{
+			car.SetStickyForce({ 0.f,0.f });
+		}
+		else
+		{
+			car.SetStickyForce({ 0.5,1.5 }); // OG values are  .5, 1.5 -- Ground/Wall
+			acc.SetAirTorque(defaultTorque);
 		}
 	}
 }

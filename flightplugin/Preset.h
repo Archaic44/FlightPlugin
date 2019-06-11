@@ -7,7 +7,7 @@ class Preset
 public:
 	Preset(float speed, float boost, float density, float carL, float carW, float carH,
 		float xDrag, float yDrag, float zDrag, float pitch, float roll, float yaw,
-		float lift, float sticky) 
+		float lift, float throttle) 
 	{
 		pre[0] = speed;
 		pre[1] = boost;
@@ -22,7 +22,7 @@ public:
 		pre[10] = roll;
 		pre[11] = yaw;
 		pre[12] = lift;
-		pre[13] = sticky;
+		pre[13] = throttle;
 	}
 	float operator[] (int i)
 	{
