@@ -95,14 +95,12 @@ void flightplugin::OnFreeplayLoad(std::string eventName)
 	}
 	else 
 	{
-		gameWrapper->UnregisterDrawables();
 		gameWrapper->UnhookEvent("Function TAGame.Car_TA.SetVehicleInput");
 	}
 }
 void flightplugin::OnFreeplayDestroy(std::string eventName)
 {
 	gameWrapper->UnhookEvent("Function TAGame.Car_TA.SetVehicleInput");
-	gameWrapper->UnregisterDrawables();
 }
 void flightplugin::OnEnabledChanged(std::string oldValue, CVarWrapper cvar)
 {
@@ -139,7 +137,6 @@ void flightplugin::OnEnabledChanged(std::string oldValue, CVarWrapper cvar)
 	else
 	{
 		gameWrapper->UnhookEvent("Function TAGame.Car_TA.SetVehicleInput");
-		gameWrapper->UnregisterDrawables();
 	}
 }
 Vector flightplugin::reflect_v1_on_v2(Vector incident, Vector n_unit)
