@@ -23,7 +23,7 @@ private:
 	RBState oldCarRBState;
 	std::chrono::time_point<std::chrono::steady_clock> last_time;
 	std::chrono::time_point<std::chrono::steady_clock> start_time;
-	std::shared_ptr<Preset> pre;
+	std::shared_ptr<Preset> preset;
 
 public:
 	virtual void onLoad();
@@ -36,6 +36,7 @@ public:
 	std::shared_ptr<float> pitch_scalar, roll_scalar, yaw_scalar;
 	std::shared_ptr<float> up_scalar;
 	std::shared_ptr<int> forceMode;
+	std::shared_ptr<int> preset_int;
 	std::shared_ptr<bool> enabled;
 	std::shared_ptr<float> weez;
 	std::shared_ptr<float> cvarThrottle;

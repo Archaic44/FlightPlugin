@@ -21,7 +21,7 @@
 #include "Preset.h"
 
 
-BAKKESMOD_PLUGIN(flightplugin, "Flight plugin", "1.0.0", PLUGINTYPE_FREEPLAY)
+BAKKESMOD_PLUGIN(flightplugin, "Flight plugin", "0.3.0-beta", PLUGINTYPE_FREEPLAY)
 
 using namespace sp;
 
@@ -43,13 +43,28 @@ void flightplugin::onLoad()
 	up_scalar = make_shared<float>(0.0f);
 	forceMode = make_shared<int>(0);
 	cvarThrottle = make_shared<float>(0.0f);
-	pre = std::make_shared<Preset>(Preset(1.0f,1.0f, 0.0f, 1.0f,1.0f,1.0f,0.0f,0.0f,0.0f,0.0f,0.0f,0.0f,0.0f,1.0f));
-	
+	preset_int = make_shared<int>(0);
+	preset = std::make_shared<Preset>(Preset());
+
+	logger.cvarManager = this->cvarManager;
+	cmdManager.cvarManager = this->cvarManager;
+	preset->cvarManager = this->cvarManager;
+	painter.cvarManager = this->cvarManager;
+
+	cmdManager.gameWrapper = this->gameWrapper;
+	painter.gameWrapper = this->gameWrapper;
+	painter.shared = this;
+
+	cmdManager.addCommands();
+	painter.initDrawables();
+
+
 	cvarManager->registerCvar("fp_enabled", "0", "Enables/disable flight lift functionality", true, true, 0.f, true, 1.f)
 		.addOnValueChanged(std::bind(&flightplugin::OnEnabledChanged, this, std::placeholders::_1, std::placeholders::_2));
 	cvarManager->getCvar("fp_enabled").bindTo(enabled);
 	cvarManager->registerCvar("fp_preset", "0", "Presets for slider values", true, true, 0, true, 2000)
 		.addOnValueChanged(bind(&flightplugin::OnEnabledChanged, this, std::placeholders::_1, std::placeholders::_2));
+	cvarManager->getCvar("fp_preset").bindTo(preset_int);
 	cvarManager->registerCvar("fp_air_density", "0", "Air Density", true, true, 0.f, true, 1.f, true).bindTo(rho);
 	cvarManager->registerCvar("fp_length", "1", "Car Length", true, true, 0.f, true, 10.f, true).bindTo(length);
 	cvarManager->registerCvar("fp_width", "1", "Car Width", true, true, 0.f, true, 10.f, true).bindTo(width);
@@ -65,26 +80,19 @@ void flightplugin::onLoad()
 	cvarManager->registerCvar("fp_speed", "1", "Terminal Velocity Multiplier", true, true, 0.000499, true, 10.f).bindTo(max_speed);
 	cvarManager->registerCvar("fp_defaultThrottle", "12000", "air throttle speed fast", true, true, 12000.f, true, 2000000.f, true).bindTo(cvarThrottle);
 
-	logger.cvarManager = this->cvarManager;
-
-	cmdManager.cvarManager = this->cvarManager;
-	cmdManager.gameWrapper = this->gameWrapper;
-	cmdManager.addCommands();
-
-	painter.gameWrapper = this->gameWrapper;
-	painter.cvarManager = this->cvarManager;
-	painter.shared = this;
-	painter.initDrawables();
-
 	gameWrapper->HookEvent("Function TAGame.Mutator_Freeplay_TA.Init", bind(&flightplugin::OnFreeplayLoad, this, std::placeholders::_1));
 	gameWrapper->HookEvent("Function TAGame.GameEvent_Soccar_TA.Destroyed", bind(&flightplugin::OnFreeplayDestroy, this, std::placeholders::_1));
 	gameWrapper->HookEvent("Function TAGame.GameEvent_TrainingEditor_TA.StartPlayTest", bind(&flightplugin::OnFreeplayLoad, this, std::placeholders::_1));
 	gameWrapper->HookEvent("Function TAGame.GameEvent_TrainingEditor_TA.Destroyed", bind(&flightplugin::OnFreeplayDestroy, this, std::placeholders::_1));
 	gameWrapper->HookEvent("Function TAGame.GameInfo_Soccar_TA.InitGameEvent", bind(&flightplugin::OnFreeplayLoad, this, std::placeholders::_1));
 	gameWrapper->HookEvent("Function TAGame.GameInfo_Soccar_TA.HandleMainEventDestroyed", bind(&flightplugin::OnFreeplayDestroy, this, std::placeholders::_1));
+	cvarManager->executeCommand("cl_settings_refreshplugins");
 }
 void flightplugin::onUnload()
 {
+	preset->FillPreset(0);
+	preset->SetPreset();
+	this->OnSetInput(gameWrapper->GetLocalCar(), nullptr, "filler");
 }
 void flightplugin::OnFreeplayLoad(std::string eventName)
 {
@@ -115,24 +123,17 @@ void flightplugin::OnEnabledChanged(std::string oldValue, CVarWrapper cvar)
 	else if (!cvar.getBoolValue() && cvarName == "fp_enabled")
 	{
 		gameWrapper->UnhookEvent("Function TAGame.Car_TA.SetVehicleInput");
+		int tmp = *preset_int;
+		preset->FillPreset(0);
+		preset->SetPreset();
+		this->OnSetInput(gameWrapper->GetLocalCar(), nullptr, "filler");
+		preset->FillPreset(tmp);
+		preset->SetPreset();
 	}
 	else if (cvarName == "fp_preset" && cvar.getIntValue() >= 0)
 	{
-		Preset tmp = pre->FillPreset(cvar.getIntValue());
-		cvarManager->executeCommand("fp_speed " + sp::to_string(tmp[0], 5), false);
-		cvarManager->executeCommand("fp_boost " + sp::to_string(tmp[1], 5), false);
-		cvarManager->executeCommand("fp_air_density " + sp::to_string(tmp[2], 5), false);
-		cvarManager->executeCommand("fp_length " + sp::to_string(tmp[3], 5), false);
-		cvarManager->executeCommand("fp_width " + sp::to_string(tmp[4], 5), false);
-		cvarManager->executeCommand("fp_height " + sp::to_string(tmp[5], 5), false);
-		cvarManager->executeCommand("fp_drag_x " + sp::to_string(tmp[6], 5), false);
-		cvarManager->executeCommand("fp_drag_y " + sp::to_string(tmp[7], 5), false);
-		cvarManager->executeCommand("fp_drag_z " + sp::to_string(tmp[8], 5), false);
-		cvarManager->executeCommand("fp_pitch " + sp::to_string(tmp[9], 5), false);
-		cvarManager->executeCommand("fp_roll " + sp::to_string(tmp[10], 5), false);
-		cvarManager->executeCommand("fp_yaw " + sp::to_string(tmp[11], 5), false);
-		cvarManager->executeCommand("fp_lift " + sp::to_string(tmp[12], 5), false);
-		cvarManager->executeCommand("fp_defaultThrottle " + sp::to_string(tmp[13], 5), false);
+		preset->FillPreset(cvar.getIntValue());
+		preset->SetPreset();
 	}
 	else
 	{

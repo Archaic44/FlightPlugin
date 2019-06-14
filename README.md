@@ -15,8 +15,10 @@ With `Flight Plugin` selected, load the plugin and enable it with the `Load Plug
 ## Contributing
 You must have BakkesMod downloaded (this plugin requires the Bakkesmod SDK and lib files). Visual Studio is the recommended IDE for compiling the `.dll` files, and must be set to Release and x86.
 
-Set these environment variables in your OS:
+Set these environment variables in your OS (where `Drive` is the disk partition with Rocket League & BakkesMod installed):
 - `BakkesSDK` : `Drive:\Program Files %28x86%29\Steam\steamapps\common\rocketleague\Binaries\Win32\bakkesmod\bakkesmodsdk\include\`
 - `BakkesLIB` : `Drive:\Program Files %28x86%29\Steam\steamapps\common\rocketleague\Binaries\Win32\bakkesmod\bakkesmodsdk\include\lib\`
+
+*Note:* Your `Program Files (x86)` contains parenthesis that must be encoded in Unicode literals: `%28 = (` `%29 = )` as in the above example.
 
 Reopening Visual Studio should refresh the OS environment variables. If you have any questions, feel free to reach out to us on Github or in the [BakkesMod Discord](https://discord.gg/9PtUKcj).
