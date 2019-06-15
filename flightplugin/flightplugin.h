@@ -45,6 +45,8 @@ public:
 	void OnFreeplayLoad(std::string eventName);
 	void OnFreeplayDestroy(std::string eventName);
 	void OnEnabledChanged(std::string oldValue, CVarWrapper cvar);
+	void OnResetShot(std::string eventName);
+	void OnSpawn(std::string eventName);
 	Vector reflect_v1_on_v2(Vector v1, Vector v2);
 
 	ofstream dump_file;

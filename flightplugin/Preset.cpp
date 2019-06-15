@@ -18,6 +18,13 @@ void Preset::FillPreset(int preset)
 		*this = tmp;
 		break;
 	}
+	default:
+	{
+		Preset tmp = Preset(); // Default
+		tmp.cvarManager = this->cvarManager;
+		*this = tmp;
+		break;
+	}
 	}
 }
 

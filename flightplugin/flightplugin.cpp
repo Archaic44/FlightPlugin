@@ -86,6 +86,8 @@ void flightplugin::onLoad()
 	gameWrapper->HookEvent("Function TAGame.GameEvent_TrainingEditor_TA.Destroyed", bind(&flightplugin::OnFreeplayDestroy, this, std::placeholders::_1));
 	gameWrapper->HookEvent("Function TAGame.GameInfo_Soccar_TA.InitGameEvent", bind(&flightplugin::OnFreeplayLoad, this, std::placeholders::_1));
 	gameWrapper->HookEvent("Function TAGame.GameInfo_Soccar_TA.HandleMainEventDestroyed", bind(&flightplugin::OnFreeplayDestroy, this, std::placeholders::_1));
+	gameWrapper->HookEvent("Function GameEvent_TA.Countdown.OnPlayerRestarted", bind(&flightplugin::OnResetShot, this, std::placeholders::_1));
+	gameWrapper->HookEvent("Function GameEvent_TA.Countdown.StartCountdownTimer", bind(&flightplugin::OnSpawn, this, std::placeholders::_1));
 	cvarManager->executeCommand("cl_settings_refreshplugins");
 }
 void flightplugin::onUnload()
@@ -105,6 +107,14 @@ void flightplugin::OnFreeplayLoad(std::string eventName)
 	{
 		gameWrapper->UnhookEvent("Function TAGame.Car_TA.SetVehicleInput");
 	}
+}
+void flightplugin::OnResetShot(std::string eventName)
+{
+	cvarManager->executeCommand("fp_enabled 0");
+}
+void flightplugin::OnSpawn(std::string eventName)
+{
+	cvarManager->executeCommand("fp_enabled 1");
 }
 void flightplugin::OnFreeplayDestroy(std::string eventName)
 {
