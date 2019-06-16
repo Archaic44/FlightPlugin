@@ -2,56 +2,62 @@
 #include "bakkesmod/plugin/bakkesmodplugin.h"
 #include "HelperFunctions.h"
 using namespace sp;
-
+struct ArrayHolder
+{
+	float array[14];
+};
 class Preset
 {
-	float pre[14];
+	ArrayHolder preset;
 public:
 	Preset() // Default Preset Constructor
 	{
-		pre[0] = 1.f;
-		pre[1] = 1.f;
-		pre[2] = 0.f;
-		pre[3] = 1.f;
-		pre[4] = 1.f;
-		pre[5] = 1.f;
-		pre[6] = 0.f;
-		pre[7] = 0.f;
-		pre[8] = 0.f;
-		pre[9] = 0.f;
-		pre[10] = 0.f;
-		pre[11] = 0.f;
-		pre[12] = 0.f;
-		pre[13] = 12000.f;
+		preset.array[0] = 1.f;
+		preset.array[1] = 1.f;
+		preset.array[2] = 0.f;
+		preset.array[3] = 1.f;
+		preset.array[4] = 1.f;
+		preset.array[5] = 1.f;
+		preset.array[6] = 0.f;
+		preset.array[7] = 0.f;
+		preset.array[8] = 0.f;
+		preset.array[9] = 0.f;
+		preset.array[10] = 0.f;
+		preset.array[11] = 0.f;
+		preset.array[12] = 0.f;
+		preset.array[13] = 1.f;
 	}
 	Preset(float speed, float boost, float density, float carL, float carW, float carH,
 		float xDrag, float yDrag, float zDrag, float pitch, float roll, float yaw,
 		float lift, float throttle) 
 	{
-		pre[0] = speed;
-		pre[1] = boost;
-		pre[2] = density;
-		pre[3] = carL;
-		pre[4] = carW;
-		pre[5] = carH;
-		pre[6] = xDrag;
-		pre[7] = yDrag;
-		pre[8] = zDrag;
-		pre[9] = pitch;
-		pre[10] = roll;
-		pre[11] = yaw;
-		pre[12] = lift;
-		pre[13] = throttle;
+		preset.array[0] = speed;
+		preset.array[1] = boost;
+		preset.array[2] = density;
+		preset.array[3] = carL;
+		preset.array[4] = carW;
+		preset.array[5] = carH;
+		preset.array[6] = xDrag;
+		preset.array[7] = yDrag;
+		preset.array[8] = zDrag;
+		preset.array[9] = pitch;
+		preset.array[10] = roll;
+		preset.array[11] = yaw;
+		preset.array[12] = lift;
+		preset.array[13] = throttle;
 	}
 	float operator[] (int i)
 	{
-		return pre[i];
+		return preset.array[i];
 	}
 	const float operator[](int i) const
 	{
-		return pre[i];
+		return preset.array[i];
 	}
 	std::shared_ptr<CVarManagerWrapper> cvarManager;
 	void FillPreset(int preset);
 	void SetPreset();
+	ArrayHolder* GetArray();
+	void SetArray(ArrayHolder* val);
+	int GetArraySize();
 };

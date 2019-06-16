@@ -6,9 +6,11 @@
 #include "bakkesmod\wrappers\gamewrapper.h"
 #include "bakkesmod\wrappers\wrapperstructs.h"
 #include <fstream>
+#include <iostream>
 #include <iomanip>
 #include <sstream>
 #include <string>
+#include <sys/stat.h>
 #include "Logger.h"
 #include "CommandsManager.h"
 #include "Painter.h"
@@ -21,6 +23,7 @@ private:
 	CommandsManager cmdManager;
 	Painter painter;
 	RBState oldCarRBState;
+	bool wasEnabled = false;
 	std::chrono::time_point<std::chrono::steady_clock> last_time;
 	std::chrono::time_point<std::chrono::steady_clock> start_time;
 	std::shared_ptr<Preset> preset;
@@ -37,17 +40,19 @@ public:
 	std::shared_ptr<float> up_scalar;
 	std::shared_ptr<int> forceMode;
 	std::shared_ptr<int> preset_int;
-	std::shared_ptr<bool> enabled;
-	std::shared_ptr<float> weez;
-	std::shared_ptr<float> cvarThrottle;
+	std::shared_ptr<bool> enabled, create;
+	std::shared_ptr<std::string> name;
+	std::shared_ptr<float> throttle;
 
 	void OnSetInput(CarWrapper cw, void* params, string funcName);
 	void OnFreeplayLoad(std::string eventName);
 	void OnFreeplayDestroy(std::string eventName);
 	void OnEnabledChanged(std::string oldValue, CVarWrapper cvar);
+	void OnPresetChanged(std::string oldvalue, CVarWrapper cvar);
 	void OnResetShot(std::string eventName);
 	void OnSpawn(std::string eventName);
+	void OnCreateChanged(std::string eventName, CVarWrapper cvar);
+	void RemovePhysics(CarWrapper cw);
 	Vector reflect_v1_on_v2(Vector v1, Vector v2);
-
 	ofstream dump_file;
 };

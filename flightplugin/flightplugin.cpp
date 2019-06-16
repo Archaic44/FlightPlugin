@@ -21,13 +21,15 @@
 #include "Preset.h"
 
 
-BAKKESMOD_PLUGIN(flightplugin, "Flight plugin", "0.3.0-beta", PLUGINTYPE_FREEPLAY)
+BAKKESMOD_PLUGIN(flightplugin, "Flight plugin", "0.4.0-beta", PLUGINTYPE_FREEPLAY)
 
 using namespace sp;
 
 void flightplugin::onLoad()
 {
 	enabled = make_shared<bool>(false);
+	create = make_shared<bool>(false);
+	name = make_shared<std::string>("");
 	rho = make_shared<float>(0.0f);
 	boost = make_shared<float>(1.0f);
 	max_speed = make_shared<float>(1.0f);
@@ -42,7 +44,7 @@ void flightplugin::onLoad()
 	yaw_scalar = make_shared<float>(0.0f);
 	up_scalar = make_shared<float>(0.0f);
 	forceMode = make_shared<int>(0);
-	cvarThrottle = make_shared<float>(0.0f);
+	throttle = make_shared<float>(1.0f);
 	preset_int = make_shared<int>(0);
 	preset = std::make_shared<Preset>(Preset());
 
@@ -57,15 +59,8 @@ void flightplugin::onLoad()
 
 	cmdManager.addCommands();
 	painter.initDrawables();
-
-
-	cvarManager->registerCvar("fp_enabled", "0", "Enables/disable flight lift functionality", true, true, 0.f, true, 1.f)
-		.addOnValueChanged(std::bind(&flightplugin::OnEnabledChanged, this, std::placeholders::_1, std::placeholders::_2));
-	cvarManager->getCvar("fp_enabled").bindTo(enabled);
-	cvarManager->registerCvar("fp_preset", "0", "Presets for slider values", true, true, 0, true, 2000)
-		.addOnValueChanged(bind(&flightplugin::OnEnabledChanged, this, std::placeholders::_1, std::placeholders::_2));
-	cvarManager->getCvar("fp_preset").bindTo(preset_int);
-	cvarManager->registerCvar("fp_air_density", "0", "Air Density", true, true, 0.f, true, 1.f, true).bindTo(rho);
+	cvarManager->registerCvar("fp_name_preset", "[Name of Preset]", "Name your custom flight plugin preset", true, false, 0, false, 1, false).bindTo(name);
+	cvarManager->registerCvar("fp_air_density", "0", "Air Density", true, true, 0.f, true, 0.5f, true).bindTo(rho);
 	cvarManager->registerCvar("fp_length", "1", "Car Length", true, true, 0.f, true, 10.f, true).bindTo(length);
 	cvarManager->registerCvar("fp_width", "1", "Car Width", true, true, 0.f, true, 10.f, true).bindTo(width);
 	cvarManager->registerCvar("fp_height", "1", "Car Height", true, true, 0.f, true, 10.f, true).bindTo(height);
@@ -78,7 +73,17 @@ void flightplugin::onLoad()
 	cvarManager->registerCvar("fp_lift", "0", "Scales Up/Down Lift", true, true, 0.f, true, 10.f, true).bindTo(up_scalar);
 	cvarManager->registerCvar("fp_boost", "1", "Boost Power Multiplier", true, true, 0.f, true, 10.f).bindTo(boost);
 	cvarManager->registerCvar("fp_speed", "1", "Terminal Velocity Multiplier", true, true, 0.000499, true, 10.f).bindTo(max_speed);
-	cvarManager->registerCvar("fp_defaultThrottle", "12000", "air throttle speed fast", true, true, 12000.f, true, 2000000.f, true).bindTo(cvarThrottle);
+	cvarManager->registerCvar("fp_throttle", "1", "Air Throttle Force Multiplier", true, true, 0.f, true, 10.f, false).bindTo(throttle);
+
+	cvarManager->registerCvar("fp_enabled", "0", "Enables/disable flight lift functionality", true, true, 0.f, true, .5f, false)
+		.addOnValueChanged(std::bind(&flightplugin::OnEnabledChanged, this, std::placeholders::_1, std::placeholders::_2));
+	cvarManager->getCvar("fp_enabled").bindTo(enabled);
+	cvarManager->registerCvar("fp_preset", "0", "Presets for slider values", true, true, 0, true, 2000)
+		.addOnValueChanged(bind(&flightplugin::OnPresetChanged, this, std::placeholders::_1, std::placeholders::_2));
+	cvarManager->getCvar("fp_preset").bindTo(preset_int);
+	cvarManager->registerCvar("fp_create", "0", "Create your custom flight plugin preset", true, true, 0, true, 1, false)
+		.addOnValueChanged(bind(&flightplugin::OnCreateChanged, this, std::placeholders::_1, std::placeholders::_2));
+	cvarManager->getCvar("fp_create").bindTo(create);
 
 	gameWrapper->HookEvent("Function TAGame.Mutator_Freeplay_TA.Init", bind(&flightplugin::OnFreeplayLoad, this, std::placeholders::_1));
 	gameWrapper->HookEvent("Function TAGame.GameEvent_Soccar_TA.Destroyed", bind(&flightplugin::OnFreeplayDestroy, this, std::placeholders::_1));
@@ -88,13 +93,113 @@ void flightplugin::onLoad()
 	gameWrapper->HookEvent("Function TAGame.GameInfo_Soccar_TA.HandleMainEventDestroyed", bind(&flightplugin::OnFreeplayDestroy, this, std::placeholders::_1));
 	gameWrapper->HookEvent("Function GameEvent_TA.Countdown.OnPlayerRestarted", bind(&flightplugin::OnResetShot, this, std::placeholders::_1));
 	gameWrapper->HookEvent("Function GameEvent_TA.Countdown.StartCountdownTimer", bind(&flightplugin::OnSpawn, this, std::placeholders::_1));
-	cvarManager->executeCommand("cl_settings_refreshplugins");
+	cvarManager->executeCommand("cl_settings_refreshplugins",false);
 }
+inline string ArrayToString(ArrayHolder* array, int size)
+{
+	string returnstring = "";
+	for (int temp = 0; temp < size; temp++)
+	{
+		returnstring += sp::to_string(array->array[temp], 3);
+		returnstring += " ";
+	}
+	return returnstring;
+}
+inline bool FileExist(const std::string& name)
+{
+	struct stat buffer;
+	return (stat(name.c_str(), &buffer) == 0);
+}
+void flightplugin::OnCreateChanged(std::string eventName, CVarWrapper cvar)
+{
+	if (!cvar.getBoolValue())
+		return;
+	// Get preset name
+	if (CreateDirectory("./bakkesmod/flightplugin", NULL))
+	{
+		cvarManager->log("Created flightplugin directory.");
+	}
+	else if (ERROR_ALREADY_EXISTS == GetLastError())
+	{
+		cvarManager->log("Directory flightplugin already exists. Creating preset!");
+	}
+
+	auto preset_name = *name;
+	Preset tmp = Preset(*max_speed, *boost, *rho, *length, *width, *height, *x_drag, *y_drag, 
+					*z_drag, *pitch_scalar, *roll_scalar, *yaw_scalar, *up_scalar, *throttle);
+
+	std::ofstream out("./bakkesmod/flightplugin/" + preset_name + ".txt");
+	if (!out.is_open())
+	{
+		cvarManager->log("Error opening preset file. Close preset.txt if open in an editor.");
+		return;
+	}
+	else
+	{
+		std::string preset_contents = ArrayToString(tmp.GetArray(), tmp.GetArraySize());
+		// Writes preset vals to flightplugin/{preset_name}.txt
+		out << preset_contents;
+		out.close();
+		cvarManager->log("Wrote to " + preset_name + ".txt");
+	}
+
+	// Do stuff to .set file
+	std::ifstream filein("./bakkesmod/plugins/settings/flightplugin.set");
+	std::ofstream fileout("./bakkesmod/plugins/settings/tmp.set");
+	if (!filein.is_open() || !fileout.is_open())
+	{
+		cvarManager->log("Error opening flightplugin.set files. Close flightplugin.set if open in an editor.");
+	}
+	else 
+	{
+		string strTemp;
+		while (std::getline(filein,strTemp))
+		{
+			if (strTemp.find("fp_preset") != string::npos)
+			{
+				if (strTemp.find(preset_name))
+					cvarManager->log("Preset already exists! Overwriting!");
+				strTemp += "&" + preset_name + "@" + preset_name;
+			}
+			fileout << strTemp << '\n';
+		}
+		filein.close();
+		fileout.close();
+		cvarManager->log("Wrote to tmp.set");
+	}
+	if (remove("./bakkesmod/plugins/settings/flightplugin.set"))
+		cvarManager->log("Error deleting file");
+	else
+		cvarManager->log("File successfully deleted");
+
+	if (rename("./bakkesmod/plugins/settings/tmp.set", "./bakkesmod/plugins/settings/flightplugin.set"))
+		cvarManager->log("Failed to mv tmp.set to flightplugin.set");
+	else
+		cvarManager->log("Preset " + preset_name + " added!");
+	cvarManager->executeCommand("cl_settings_refreshplugins", false);
+
+}
+void flightplugin::RemovePhysics(CarWrapper cw)
+{
+	if(cw.IsNull())
+	{
+		return;
+	}
+	auto car = cw;
+	car.SetMaxLinearSpeed(2300);
+	car.SetMaxLinearSpeed2(2300);
+	car.GetBoostComponent().SetBoostForce(178500);
+	AirControlComponentWrapper acc = car.GetAirControlComponent();
+	acc.SetThrottleForce(12000);
+	acc.SetAirTorque({ 130, 95, 400 });
+}
+
 void flightplugin::onUnload()
 {
-	preset->FillPreset(0);
-	preset->SetPreset();
-	this->OnSetInput(gameWrapper->GetLocalCar(), nullptr, "filler");
+	cvarManager->log("Debug5 statement");
+
+	if (gameWrapper->IsInGame())
+	this->RemovePhysics(gameWrapper->GetLocalCar());
 }
 void flightplugin::OnFreeplayLoad(std::string eventName)
 {
@@ -110,40 +215,75 @@ void flightplugin::OnFreeplayLoad(std::string eventName)
 }
 void flightplugin::OnResetShot(std::string eventName)
 {
-	cvarManager->executeCommand("fp_enabled 0");
+	if (*enabled)
+	{
+		wasEnabled = true;
+	}
+	*enabled = false;
 }
 void flightplugin::OnSpawn(std::string eventName)
 {
-	cvarManager->executeCommand("fp_enabled 1");
+	if (wasEnabled)
+	{
+		wasEnabled = false;
+		*enabled = true;
+	}
 }
 void flightplugin::OnFreeplayDestroy(std::string eventName)
 {
 	gameWrapper->UnhookEvent("Function TAGame.Car_TA.SetVehicleInput");
 }
+inline bool isInteger(const std::string& s)
+{
+	if (s.empty() || ((!isdigit(s[0])) && (s[0] != '-') && (s[0] != '+'))) return false;
+
+	char* p;
+	strtol(s.c_str(), &p, 10);
+
+	return (*p == 0);
+}
+void flightplugin::OnPresetChanged(std::string oldvalue, CVarWrapper cvar)
+{
+	auto val = cvar.getStringValue();
+	//string tmp = cvar.
+	if (isInteger(val))
+	{
+		preset->FillPreset(cvar.getIntValue());
+		preset->SetPreset();
+	}
+	else
+	{
+		std::ifstream filein("./bakkesmod/flightplugin/" + val + ".txt");
+		float element;
+		ArrayHolder tmp;
+		if (filein.is_open())
+		{
+			int i = 0;
+			while (filein >> element)
+			{
+				tmp.array[i++] = element;
+			}
+			filein.close();
+			preset->SetArray(&tmp);
+			preset->SetPreset();
+		}
+	}
+}
 void flightplugin::OnEnabledChanged(std::string oldValue, CVarWrapper cvar)
 {
+
 	auto cvarName = cvar.getCVarName();
 	bool inSafe = gameWrapper->IsInFreeplay() | gameWrapper->IsInCustomTraining() | gameWrapper->IsInGame();
 
-	if (cvar.getBoolValue() && cvarName == "fp_enabled" && inSafe)
+	if (cvar.getBoolValue() && inSafe)
 	{
 		gameWrapper->HookEventWithCaller<CarWrapper>("Function TAGame.Car_TA.SetVehicleInput",
 			bind(&flightplugin::OnSetInput, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3));
 	}
-	else if (!cvar.getBoolValue() && cvarName == "fp_enabled")
+	else if (!cvar.getBoolValue() && inSafe)
 	{
 		gameWrapper->UnhookEvent("Function TAGame.Car_TA.SetVehicleInput");
-		int tmp = *preset_int;
-		preset->FillPreset(0);
-		preset->SetPreset();
-		this->OnSetInput(gameWrapper->GetLocalCar(), nullptr, "filler");
-		preset->FillPreset(tmp);
-		preset->SetPreset();
-	}
-	else if (cvarName == "fp_preset" && cvar.getIntValue() >= 0)
-	{
-		preset->FillPreset(cvar.getIntValue());
-		preset->SetPreset();
+		this->RemovePhysics(gameWrapper->GetLocalCar());
 	}
 	else
 	{
@@ -167,6 +307,7 @@ void flightplugin::OnSetInput(CarWrapper cw, void * params, string funcName)
 {
 	if (gameWrapper->IsInFreeplay() && *enabled && !cw.IsNull() && !cw.GetBoostComponent().IsNull())
 	{
+		cvarManager->log("OSI");
 		/* Definitions */
 		auto car = cw;
 		RBState rbstate = car.GetRBState();
@@ -246,7 +387,7 @@ void flightplugin::OnSetInput(CarWrapper cw, void * params, string funcName)
 		Rotator defaultTorque = { 130, 95, 400 };
 
 		AirControlComponentWrapper acc = car.GetAirControlComponent();
-		acc.SetThrottleForce(*cvarThrottle);
+		acc.SetThrottleForce(12000 * (*throttle));
 		float speedTorqueRatio = 1300 / speed;
 		Rotator newTorque = (defaultTorque * speedTorqueRatio);
 		acc.SetAirTorque(newTorque);

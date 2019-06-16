@@ -146,7 +146,7 @@ void Painter::drawSliderValues(CanvasWrapper cw, CarWrapper car, int x, int y)
 	float lift =*s->up_scalar;
 	float boost = *s->boost;
 	float speed = *s->max_speed;
-	float throttle = *s->cvarThrottle;
+	float throttle = *s->throttle;
 	int marginLeft = 10;
 	int marginTop = 20;
 	int titleSpacing = 90;
