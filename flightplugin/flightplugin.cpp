@@ -20,7 +20,6 @@
 #include "utils\parser.h"
 #include "Preset.h"
 
-
 BAKKESMOD_PLUGIN(flightplugin, "Flight plugin", "0.4.0-beta", PLUGINTYPE_FREEPLAY)
 
 using namespace sp;
@@ -167,13 +166,20 @@ void flightplugin::OnCreateChanged(std::string eventName, CVarWrapper cvar)
 		fileout.close();
 		cvarManager->log("Wrote to tmp.set");
 	}
-	if (remove("./bakkesmod/plugins/settings/flightplugin.set"))
-		cvarManager->log("Error deleting file");
+	char mode[] = "0644";
+	int i = strtol(mode, 0, 8);
+	if (_chmod("./bakkesmod/plugins/settings/flightplugin.set", i))
+		cvarManager->log("Unable to modify flightplugin.set permissions");
 	else
-		cvarManager->log("File successfully deleted");
+		cvarManager->log("Updated flightplugin.set permissions.");
+
+	if (remove("./bakkesmod/plugins/settings/flightplugin.set"))
+		cvarManager->log("Error deleting flightplugin.set. Errno: " + string(strerror(errno)));
+	else
+		cvarManager->log("flightplugin.set successfully deleted");
 
 	if (rename("./bakkesmod/plugins/settings/tmp.set", "./bakkesmod/plugins/settings/flightplugin.set"))
-		cvarManager->log("Failed to mv tmp.set to flightplugin.set");
+		cvarManager->log("Failed to rename tmp.set to flightplugin.set: " + string(strerror(errno)));
 	else
 		cvarManager->log("Preset " + preset_name + " added!");
 	cvarManager->executeCommand("cl_settings_refreshplugins", false);
@@ -307,7 +313,6 @@ void flightplugin::OnSetInput(CarWrapper cw, void * params, string funcName)
 {
 	if (gameWrapper->IsInFreeplay() && *enabled && !cw.IsNull() && !cw.GetBoostComponent().IsNull())
 	{
-		cvarManager->log("OSI");
 		/* Definitions */
 		auto car = cw;
 		RBState rbstate = car.GetRBState();

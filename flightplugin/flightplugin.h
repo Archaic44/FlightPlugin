@@ -11,6 +11,7 @@
 #include <sstream>
 #include <string>
 #include <sys/stat.h>
+#include <io.h>
 #include "Logger.h"
 #include "CommandsManager.h"
 #include "Painter.h"
