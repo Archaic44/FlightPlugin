@@ -2,6 +2,11 @@
 ## Introduction
 This is a plugin for [BakkesMod](https://bakkesmod.com/), a [Rocket League](https://www.rocketleague.com/) mod. It provides a new set of flight mechanics to the game such as lift, drag, and stabilization to the base game. It works in training, custom training, and workshop maps.
 
+| Without FlightPlugin | With FlightPlugin | 
+| ------------- |:-------------:|
+| ![Fall demonstration without FlightPlugin.](https://media.giphy.com/media/kDSjjZ83iqkjBRi3Nk/giphy.gif)      | ![Fall demonstration with FlightPlugin.](https://media.giphy.com/media/eKDENA4dGP2sQivtXj/giphy.gif) |
+
+
 ### Installation
 After installing BakkesMod and Rocket League, go into this repository's Releases and download the `flightplugin.dll` and `flightplugin.set` files. Place the `flightplugin.dll` and `flightplugin.set` files in these folders, respectively:
 - \Program Files (x86)\Steam\steamapps\common\rocketleague\Binaries\Win32\bakkesmod\plugins

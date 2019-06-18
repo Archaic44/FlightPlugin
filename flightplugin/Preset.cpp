@@ -13,7 +13,35 @@ void Preset::FillPreset(int preset)
 	}
 	case 1:
 	{
-		Preset tmp = Preset(2.067f, .577f, .035f, .978f, 1.218f, .481f, .065f, .065f, .321f, .321f, .304f, .240f, 2.468f, 3.5f); // Digby
+		Preset tmp = Preset(2.067f, .577f, .035f, .978f, 1.218f, .481f, .065f, .065f, .321f, .321f, .304f, .240f, .171f, 6.724f); // Digby
+		tmp.cvarManager = this->cvarManager;
+		*this = tmp;
+		break;
+	}
+	case 2:
+	{
+		Preset tmp = Preset(10.000f, 2.003f, 0.020f, 4.177f, 1.040f, 0.202f, 2.609f, 2.640f, 0.481f, 3.944f, 4.348f, 4.425f, 0.233f, 10.000); // Blackbird
+		tmp.cvarManager = this->cvarManager;
+		*this = tmp;
+		break;
+	}
+	case 3:
+	{
+		Preset tmp = Preset(2.081f, 0.000f, 0.206f, 0.978f, 1.218f, 0.481f, 1.056f, 1.071f, 0.062f, 0.000f, 0.000f, 0.326f, 3.012f, 10.000); // Hot Air Balloon
+		tmp.cvarManager = this->cvarManager;
+		*this = tmp;
+		break;
+	}
+	case 4:
+	{
+		Preset tmp = Preset(0.714f, 0.000f, 0.030f, 10.000f, 10.000f, 0.001f, 0.512f, 0.543f, 0.575f, 0.404f, 0.000f, 0.000f, 0.839f, 4.565f); // Magic Carpet
+		tmp.cvarManager = this->cvarManager;
+		*this = tmp;
+		break;
+	}
+	case 5:
+	{
+		Preset tmp = Preset(0.000f, 0.000f, 0.500f, 0.000f, 0.000f, 0.000f, 10.000f, 10.000f, 10.000f, 0.000f, 0.000f, 10.000f, 0.000f, 0.000); // Magic Carpet
 		tmp.cvarManager = this->cvarManager;
 		*this = tmp;
 		break;

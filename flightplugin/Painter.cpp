@@ -143,7 +143,7 @@ void Painter::drawSliderValues(CanvasWrapper cw, CarWrapper car, int x, int y)
 	Vector car_dimensions = Vector(*s->length, *s->width, *s->height);
 	Vector drag = Vector(*s->x_drag, *s->y_drag, *s->z_drag);
 	Vector stabilization = Vector(*s->pitch_scalar, *s->roll_scalar, *s->yaw_scalar);
-	float lift =*s->up_scalar;
+	float lift =*s->lift;
 	float boost = *s->boost;
 	float speed = *s->max_speed;
 	float throttle = *s->throttle;

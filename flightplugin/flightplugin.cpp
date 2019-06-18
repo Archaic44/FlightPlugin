@@ -42,7 +42,7 @@ void flightplugin::onLoad()
 	pitch_scalar = make_shared<float>(0.0f);
 	roll_scalar = make_shared<float>(0.0f);
 	yaw_scalar = make_shared<float>(0.0f);
-	up_scalar = make_shared<float>(0.0f);
+	lift = make_shared<float>(0.0f);
 	forceMode = make_shared<int>(0);
 	throttle = make_shared<float>(1.0f);
 	preset_int = make_shared<int>(0);
@@ -70,7 +70,7 @@ void flightplugin::onLoad()
 	cvarManager->registerCvar("fp_pitch", "0", "Scales Pitch Stabilization", true, true, 0.f, true, 10.f, true).bindTo(pitch_scalar);
 	cvarManager->registerCvar("fp_roll", "0", "Scales Roll Stabilization", true, true, 0.f, true, 10.f, true).bindTo(roll_scalar);
 	cvarManager->registerCvar("fp_yaw", "0", "Scales Yaw Stabilization", true, true, 0.f, true, 10.f, true).bindTo(yaw_scalar);
-	cvarManager->registerCvar("fp_lift", "0", "Scales Up/Down Lift", true, true, 0.f, true, 10.f, true).bindTo(up_scalar);
+	cvarManager->registerCvar("fp_lift", "0", "Scales Up/Down Lift", true, true, 0.f, true, 10.f, true).bindTo(lift);
 	cvarManager->registerCvar("fp_boost", "1", "Boost Power Multiplier", true, true, 0.f, true, 10.f).bindTo(boost);
 	cvarManager->registerCvar("fp_speed", "1", "Terminal Velocity Multiplier", true, true, 0.000499, true, 10.f).bindTo(max_speed);
 	cvarManager->registerCvar("fp_throttle", "1", "Air Throttle Force Multiplier", true, true, 0.f, true, 10.f, false).bindTo(throttle);
@@ -95,7 +95,7 @@ void flightplugin::onLoad()
 	gameWrapper->HookEvent("Function TAGame.GameInfo_Soccar_TA.InitGameEvent", bind(&flightplugin::OnFreeplayLoad, this, std::placeholders::_1));
 	gameWrapper->HookEvent("Function TAGame.GameInfo_Soccar_TA.HandleMainEventDestroyed", bind(&flightplugin::OnFreeplayDestroy, this, std::placeholders::_1));
 	gameWrapper->HookEvent("Function GameEvent_TA.Countdown.OnPlayerRestarted", bind(&flightplugin::OnResetShot, this, std::placeholders::_1));
-	gameWrapper->HookEvent("Function GameEvent_TA.Countdown.StartCountdownTimer", bind(&flightplugin::OnSpawn, this, std::placeholders::_1));
+	gameWrapper->HookEvent("Function ProjectX.GFxDataStore_X.CreateObject", bind(&flightplugin::OnSpawn, this, std::placeholders::_1));
 	cvarManager->executeCommand("cl_settings_refreshplugins",false);
 }
 inline string ArrayToString(ArrayHolder* array, int size)
@@ -129,7 +129,7 @@ void flightplugin::OnCreateChanged(std::string eventName, CVarWrapper cvar)
 
 	auto preset_name = *name;
 	Preset tmp = Preset(*max_speed, *boost, *rho, *length, *width, *height, *x_drag, *y_drag, 
-					*z_drag, *pitch_scalar, *roll_scalar, *yaw_scalar, *up_scalar, *throttle);
+					*z_drag, *pitch_scalar, *roll_scalar, *yaw_scalar, *lift, *throttle);
 
 	// Do stuff to .set file
 	std::ifstream filein("./bakkesmod/plugins/settings/flightplugin.set");
@@ -458,8 +458,12 @@ void flightplugin::OnSetInput(CarWrapper cw, void * params, string funcName)
 		car.SetAngularVelocity(tau, true);
 
 		/* Begin Lift Calculation*/
-		Vector up_lift = up * (*up_scalar) * Vector::dot(lin, fwd) * .001;
-		car.AddVelocity(up_lift);
+		Vector wing_lift = up * (*lift) * Vector::dot(lin, fwd) * .2;
+		Vector front_pressure = fwd * (*lift) * Vector::dot(lin,fwd) * -.05;
+		Vector side_pressure = right * (*lift) * Vector::dot(lin, right) * -.25;
+		Vector top_pressure = up * (*lift) * Vector::dot(lin, up) * -.25;
+		Vector lift = (wing_lift + front_pressure + side_pressure + top_pressure) * coef;
+		car.AddVelocity(lift);
 
 		car.SetMaxLinearSpeed(2300 * (*max_speed)); // 2300 is the OG max speed
 		car.SetMaxLinearSpeed2(2300 * (*max_speed));
