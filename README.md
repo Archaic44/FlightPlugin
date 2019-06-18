@@ -4,7 +4,7 @@ This is a plugin for [BakkesMod](https://bakkesmod.com/), a [Rocket League](http
 
 | Without FlightPlugin | With FlightPlugin | 
 | ------------- |:-------------:|
-| ![Fall demonstration without FlightPlugin.](https://media.giphy.com/media/kDSjjZ83iqkjBRi3Nk/giphy.gif)      | ![Fall demonstration with FlightPlugin.](https://media.giphy.com/media/eKDENA4dGP2sQivtXj/giphy.gif) |
+| ![Fall demonstration without FlightPlugin.](./noplugin.gif)      | ![Fall demonstration with FlightPlugin.](./flightplugin.gif) |
 
 
 ### Installation
