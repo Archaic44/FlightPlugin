@@ -8,7 +8,7 @@ This is a plugin for [BakkesMod](https://bakkesmod.com/), a [Rocket League](http
 
 
 ### Installation
-After installing BakkesMod and Rocket League, go into this repository's Releases and download the `flightplugin.dll` and `flightplugin.set` files. Place the `flightplugin.dll` and `flightplugin.set` files in these folders, respectively:
+After installing BakkesMod and Rocket League, go into this repository's [Releases] (https://github.com/Archaic44/FlightPlugin/releases) and download the `flightplugin.dll` and `flightplugin.set` files. Place the `flightplugin.dll` and `flightplugin.set` files in these folders, respectively:
 - \Program Files (x86)\Steam\steamapps\common\rocketleague\Binaries\Win32\bakkesmod\plugins
 - \Program Files (x86)\Steam\steamapps\common\rocketleague\Binaries\Win32\bakkesmod\plugins\settings
 
