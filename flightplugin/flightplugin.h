@@ -41,7 +41,7 @@ public:
 	std::shared_ptr<float> up_scalar;
 	std::shared_ptr<int> forceMode;
 	std::shared_ptr<int> preset_int;
-	std::shared_ptr<bool> enabled, create;
+	std::shared_ptr<bool> enabled, create, fp_delete;
 	std::shared_ptr<std::string> name;
 	std::shared_ptr<float> throttle;
 
@@ -53,6 +53,7 @@ public:
 	void OnResetShot(std::string eventName);
 	void OnSpawn(std::string eventName);
 	void OnCreateChanged(std::string eventName, CVarWrapper cvar);
+	void OnDeleteChanged(std::string eventName, CVarWrapper cvar);
 	void RemovePhysics(CarWrapper cw);
 	Vector reflect_v1_on_v2(Vector v1, Vector v2);
 	ofstream dump_file;

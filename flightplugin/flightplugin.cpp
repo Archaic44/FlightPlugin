@@ -20,7 +20,7 @@
 #include "utils\parser.h"
 #include "Preset.h"
 
-BAKKESMOD_PLUGIN(flightplugin, "Flight plugin", "0.4.0-beta", PLUGINTYPE_FREEPLAY)
+BAKKESMOD_PLUGIN(flightplugin, "Flight plugin", "0.5.0-beta", PLUGINTYPE_FREEPLAY)
 
 using namespace sp;
 
@@ -28,6 +28,7 @@ void flightplugin::onLoad()
 {
 	enabled = make_shared<bool>(false);
 	create = make_shared<bool>(false);
+	fp_delete = make_shared<bool>(false);
 	name = make_shared<std::string>("");
 	rho = make_shared<float>(0.0f);
 	boost = make_shared<float>(1.0f);
@@ -83,6 +84,9 @@ void flightplugin::onLoad()
 	cvarManager->registerCvar("fp_create", "0", "Create your custom flight plugin preset", true, true, 0, true, 1, false)
 		.addOnValueChanged(bind(&flightplugin::OnCreateChanged, this, std::placeholders::_1, std::placeholders::_2));
 	cvarManager->getCvar("fp_create").bindTo(create);
+	cvarManager->registerCvar("fp_delete", "0", "Delete your custom flight plugin preset", true, true, 0, true, 1, false)
+		.addOnValueChanged(bind(&flightplugin::OnDeleteChanged, this, std::placeholders::_1, std::placeholders::_2));
+	cvarManager->getCvar("fp_create").bindTo(fp_delete);
 
 	gameWrapper->HookEvent("Function TAGame.Mutator_Freeplay_TA.Init", bind(&flightplugin::OnFreeplayLoad, this, std::placeholders::_1));
 	gameWrapper->HookEvent("Function TAGame.GameEvent_Soccar_TA.Destroyed", bind(&flightplugin::OnFreeplayDestroy, this, std::placeholders::_1));
@@ -120,27 +124,12 @@ void flightplugin::OnCreateChanged(std::string eventName, CVarWrapper cvar)
 	}
 	else if (ERROR_ALREADY_EXISTS == GetLastError())
 	{
-		cvarManager->log("Directory flightplugin already exists. Creating preset!");
+		cvarManager->log("Directory flightplugin already exists. Attemtping to create preset...");
 	}
 
 	auto preset_name = *name;
 	Preset tmp = Preset(*max_speed, *boost, *rho, *length, *width, *height, *x_drag, *y_drag, 
 					*z_drag, *pitch_scalar, *roll_scalar, *yaw_scalar, *up_scalar, *throttle);
-
-	std::ofstream out("./bakkesmod/flightplugin/" + preset_name + ".txt");
-	if (!out.is_open())
-	{
-		cvarManager->log("Error opening preset file. Close preset.txt if open in an editor.");
-		return;
-	}
-	else
-	{
-		std::string preset_contents = ArrayToString(tmp.GetArray(), tmp.GetArraySize());
-		// Writes preset vals to flightplugin/{preset_name}.txt
-		out << preset_contents;
-		out.close();
-		cvarManager->log("Wrote to " + preset_name + ".txt");
-	}
 
 	// Do stuff to .set file
 	std::ifstream filein("./bakkesmod/plugins/settings/flightplugin.set");
@@ -149,16 +138,26 @@ void flightplugin::OnCreateChanged(std::string eventName, CVarWrapper cvar)
 	{
 		cvarManager->log("Error opening flightplugin.set files. Close flightplugin.set if open in an editor.");
 	}
-	else 
+	else
 	{
 		string strTemp;
-		while (std::getline(filein,strTemp))
+		string subStr = "&" + preset_name + "@" + preset_name;
+		string defaultPreset = preset_name + "@";
+		while (std::getline(filein, strTemp))
 		{
 			if (strTemp.find("fp_preset") != string::npos)
 			{
-				if (strTemp.find(preset_name))
-					cvarManager->log("Preset already exists! Overwriting!");
-				strTemp += "&" + preset_name + "@" + preset_name;
+				if (strTemp.find(subStr) != string::npos)
+				{
+					cvarManager->log("Preset name already exists! Overwriting slider values!");
+				}
+				else if (strTemp.find(preset_name) != string::npos)
+				{
+					cvarManager->log("Cannot overwrite base preset. Choose a different name.");
+					return;
+				}
+				else
+					strTemp += "&" + preset_name + "@" + preset_name;
 			}
 			fileout << strTemp << '\n';
 		}
@@ -181,9 +180,89 @@ void flightplugin::OnCreateChanged(std::string eventName, CVarWrapper cvar)
 	if (rename("./bakkesmod/plugins/settings/tmp.set", "./bakkesmod/plugins/settings/flightplugin.set"))
 		cvarManager->log("Failed to rename tmp.set to flightplugin.set: " + string(strerror(errno)));
 	else
-		cvarManager->log("Preset " + preset_name + " added!");
+		cvarManager->log("Preset " + preset_name + " added to flightplugin.set!");
+
+	std::ofstream out("./bakkesmod/flightplugin/" + preset_name + ".txt");
+	if (!out.is_open())
+	{
+		cvarManager->log("Error opening preset file. Close preset.txt if open in an editor.");
+		return;
+	}
+	else
+	{
+		std::string preset_contents = ArrayToString(tmp.GetArray(), tmp.GetArraySize());
+		// Writes preset vals to flightplugin/{preset_name}.txt
+		out << preset_contents;
+		out.close();
+		cvarManager->log("Wrote to " + preset_name + ".txt");
+	}
+
+
 	cvarManager->executeCommand("cl_settings_refreshplugins", false);
 
+}
+void flightplugin::OnDeleteChanged(std::string eventName, CVarWrapper cvar)
+{
+	auto preset_name = *name;
+	// Open flightplugin.set and remove that line
+	std::ifstream filein("./bakkesmod/plugins/settings/flightplugin.set");
+	std::ofstream fileout("./bakkesmod/plugins/settings/tmp.set");
+	if (!filein.is_open() || !fileout.is_open())
+	{
+		cvarManager->log("Error opening flightplugin.set files. Close flightplugin.set if open in an editor.");
+	}
+	else
+	{
+		bool presetFound = false;
+		bool isBase = false;
+		string strTemp;
+		string subStr = "&" + preset_name + "@" + preset_name;
+		string defaultPreset = preset_name + "@";
+		while (std::getline(filein, strTemp))
+		{
+			size_t pos = strTemp.find(subStr);
+			if (pos != string::npos)
+			{
+				cvarManager->log("Removing " + preset_name + " from flightplugin.set!");
+				presetFound = true;
+				strTemp.erase(pos, subStr.length());
+			}
+			else if (strTemp.find(defaultPreset) != string::npos)
+			{
+				cvarManager->log("Cannot remove base preset!");
+				isBase = true;
+			}
+			fileout << strTemp << '\n';
+		}
+		filein.close();
+		fileout.close();
+		if (!presetFound)
+		{
+			if (remove("./bakkesmod/plugins/settings/tmp.set"))
+				cvarManager->log("Error removing tmp.set");
+			else
+				cvarManager->log("Removed tmp.set");
+			if (isBase)
+				return;
+			cvarManager->log("Preset not found. Check your preset name!");
+
+			return;
+		}
+		cvarManager->log("Wrote to tmp.set...");
+	}
+	if (remove("./bakkesmod/plugins/settings/flightplugin.set"))
+		cvarManager->log("Error deleting flightplugin.set. Errno: " + string(strerror(errno)));
+	else
+		cvarManager->log("flightplugin.set successfully deleted");
+
+	if (rename("./bakkesmod/plugins/settings/tmp.set", "./bakkesmod/plugins/settings/flightplugin.set"))
+		cvarManager->log("Failed to rename tmp.set to flightplugin.set: " + string(strerror(errno)));
+	else
+		cvarManager->log("Moved tmp.set into flightplugin.set! Preset " + preset_name + " removed!");
+	string file_name = "./bakkesmod/flightplugin/" + preset_name + ".txt";
+	if (remove(file_name.c_str()))
+		cvarManager->log("Failed to remove file: flightplugin/" + preset_name + ".txt");
+	cvarManager->executeCommand("cl_settings_refreshplugins", false);
 }
 void flightplugin::RemovePhysics(CarWrapper cw)
 {
@@ -199,7 +278,6 @@ void flightplugin::RemovePhysics(CarWrapper cw)
 	acc.SetThrottleForce(12000);
 	acc.SetAirTorque({ 130, 95, 400 });
 }
-
 void flightplugin::onUnload()
 {
 	cvarManager->log("Debug5 statement");
