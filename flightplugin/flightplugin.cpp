@@ -18,9 +18,10 @@
 #include "bakkesmod\wrappers\GameEvent\TutorialWrapper.h"
 #include "bakkesmod/wrappers/arraywrapper.h"
 #include "utils\parser.h"
+#include <filesystem>
 #include "Preset.h"
 
-BAKKESMOD_PLUGIN(flightplugin, "Flight plugin", "0.5.0-beta", PLUGINTYPE_FREEPLAY)
+BAKKESMOD_PLUGIN(flightplugin, "Flight plugin", "1.0.0", PLUGINTYPE_FREEPLAY)
 
 using namespace sp;
 
@@ -92,8 +93,6 @@ void flightplugin::onLoad()
 	gameWrapper->HookEvent("Function TAGame.GameEvent_Soccar_TA.Destroyed", bind(&flightplugin::OnFreeplayDestroy, this, std::placeholders::_1));
 	gameWrapper->HookEvent("Function TAGame.GameEvent_TrainingEditor_TA.StartPlayTest", bind(&flightplugin::OnFreeplayLoad, this, std::placeholders::_1));
 	gameWrapper->HookEvent("Function TAGame.GameEvent_TrainingEditor_TA.Destroyed", bind(&flightplugin::OnFreeplayDestroy, this, std::placeholders::_1));
-	gameWrapper->HookEvent("Function TAGame.GameInfo_Soccar_TA.InitGameEvent", bind(&flightplugin::OnFreeplayLoad, this, std::placeholders::_1));
-	gameWrapper->HookEvent("Function TAGame.GameInfo_Soccar_TA.HandleMainEventDestroyed", bind(&flightplugin::OnFreeplayDestroy, this, std::placeholders::_1));
 	gameWrapper->HookEvent("Function GameEvent_TA.Countdown.OnPlayerRestarted", bind(&flightplugin::OnResetShot, this, std::placeholders::_1));
 	gameWrapper->HookEvent("Function ProjectX.GFxDataStore_X.CreateObject", bind(&flightplugin::OnSpawn, this, std::placeholders::_1));
 	cvarManager->executeCommand("cl_settings_refreshplugins",false);
@@ -124,9 +123,9 @@ void flightplugin::OnCreateChanged(std::string eventName, CVarWrapper cvar)
 	}
 	else if (ERROR_ALREADY_EXISTS == GetLastError())
 	{
-		cvarManager->log("Directory flightplugin already exists. Attemtping to create preset...");
+		cvarManager->log("Directory flightplugin already exists.");
 	}
-
+	cvarManager->log("Attempting to create preset...");
 	auto preset_name = *name;
 	Preset tmp = Preset(*max_speed, *boost, *rho, *length, *width, *height, *x_drag, *y_drag, 
 					*z_drag, *pitch_scalar, *roll_scalar, *yaw_scalar, *lift, *throttle);
@@ -137,6 +136,7 @@ void flightplugin::OnCreateChanged(std::string eventName, CVarWrapper cvar)
 	if (!filein.is_open() || !fileout.is_open())
 	{
 		cvarManager->log("Error opening flightplugin.set files. Close flightplugin.set if open in an editor.");
+		return;
 	}
 	else
 	{
