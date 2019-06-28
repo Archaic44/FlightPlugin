@@ -41,7 +41,7 @@ void Preset::FillPreset(int preset)
 	}
 	case 5:
 	{
-		Preset tmp = Preset(0.000f, 0.000f, 0.500f, 0.000f, 0.000f, 0.000f, 10.000f, 10.000f, 10.000f, 0.000f, 0.000f, 10.000f, 0.000f, 0.000); // Magic Carpet
+		Preset tmp = Preset(0.000f, 0.000f, 0.500f, 0.000f, 0.000f, 0.000f, 10.000f, 10.000f, 10.000f, 0.000f, 0.000f, 10.000f, 0.000f, 0.000); // jsonV's Merry-Go-Round
 		tmp.cvarManager = this->cvarManager;
 		*this = tmp;
 		break;
