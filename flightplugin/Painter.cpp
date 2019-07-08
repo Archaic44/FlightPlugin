@@ -30,7 +30,7 @@ void Painter::drawPanels(CanvasWrapper cw)
 		RBState rbstate = car.GetRBState();
 		if (cvarManager->getCvar("showCarDerivedInfo").getBoolValue())
 		{
-			drawCarDerivedInfo(cw, car, 20, 610);
+			drawCarDerivedInfo(cw, car, 20, 700);
 		}
 		if (cvarManager->getCvar("showYaw").getBoolValue())
 		{
@@ -81,7 +81,7 @@ void Painter::drawCarDerivedInfo(CanvasWrapper cw, CarWrapper car, int x, int y)
 
 	// Ground Speeds
 	Vector groundVel = Vector(lin.X, lin.Y, 0);
-	auto groundSpeed = abs(Vector::dot(groundVel, fwd)); // ground speed relative to cars forward
+	auto airspeed = abs(Vector::dot(groundVel, fwd)); // ground speed relative to cars forward
 
 	// Car's Velocities
 	auto linLocalFwd = Vector::dot(lin, fwd);
@@ -99,42 +99,21 @@ void Painter::drawCarDerivedInfo(CanvasWrapper cw, CarWrapper car, int x, int y)
 	Vector2 pos = { x,y };
 	cw.SetPosition(pos);
 	cw.SetColor(COLOR_PANEL);
-	Vector2 box = { 360, 350 };
+	Vector2 box = { 250, 120 }; //Flight Plugin box size width, length
 	cw.FillBox(box);
 	cw.SetColor(COLOR_TEXT);
 	cw.SetColor(205, 155, 15, 255);
 	this->drawStringAt(cw, "Flight Plugin", x + titleSpacing, y + marginTop);
 	int currentLine = marginTop + 20;
 	cw.SetColor(255, 255, 255, 255);
-	this->drawStringAt(cw, "Car Location", x + marginLeft, y + currentLine); // Car location in world
-	this->drawStringAt(cw, sp::vector_to_string(loc, 2), x + marginLeft + nameSpacing, y + currentLine);
-	currentLine += lineSpacing;
-	this->drawStringAt(cw, "True Speed", x + marginLeft, y + currentLine); //this lin.magnitude = speed relative to world
+	//this->drawStringAt(cw, "Car Location", x + marginLeft, y + currentLine); // Car location in world
+	//this->drawStringAt(cw, sp::vector_to_string(loc, 2), x + marginLeft + nameSpacing, y + currentLine);
+	//currentLine += lineSpacing;
+	this->drawStringAt(cw, "Ground Speed", x + marginLeft, y + currentLine); //this lin.magnitude = speed relative to world
 	this->drawStringAt(cw, sp::to_string(lin.magnitude(), 4), x + marginLeft + nameSpacing, y + currentLine);
 	currentLine += lineSpacing;
-	this->drawStringAt(cw, "Ground Speed", x + marginLeft, y + currentLine); //speed relative to cars forward
-	this->drawStringAt(cw, sp::to_string(groundSpeed, 4), x + marginLeft + nameSpacing, y + currentLine);
-	currentLine += lineSpacing;
-	this->drawStringAt(cw, "World Vel", x + marginLeft, y + currentLine);
-	this->drawStringAt(cw, sp::vector_to_string(lin, 4), x + marginLeft + nameSpacing, y + currentLine);
-	currentLine += lineSpacing;
-	this->drawStringAt(cw, "Car Fwd/Rt/Up Vel", x + marginLeft, y + currentLine);
-	this->drawStringAt(cw, sp::vector_to_string(linLocal, 3), x + marginLeft + nameSpacing, y + currentLine);
-	currentLine += lineSpacing;
-	this->drawStringAt(cw, "Quat (WXYZ)", x + marginLeft, y + currentLine);
-	this->drawStringAt(cw, sp::quat_to_string(quat, 3), x + marginLeft + nameSpacing, y + currentLine);
-	currentLine += lineSpacing;
-	this->drawStringAt(cw, "Up", x + marginLeft, y + currentLine);
-	this->drawStringAt(cw, sp::vector_to_string(up, 5), x + marginLeft + nameSpacing, y + currentLine);
-	currentLine += lineSpacing;
-	this->drawStringAt(cw, "Right", x + marginLeft, y + currentLine);
-	this->drawStringAt(cw, sp::vector_to_string(right, 5), x + marginLeft + nameSpacing, y + currentLine);
-	currentLine += lineSpacing;
-	this->drawStringAt(cw, "Fwd", x + marginLeft, y + currentLine);
-	this->drawStringAt(cw, sp::vector_to_string(fwd, 5), x + marginLeft + nameSpacing, y + currentLine);
-	currentLine += lineSpacing;
-	this->drawStringAt(cw, "Angular Vel", x + marginLeft, y + currentLine);
-	this->drawStringAt(cw, sp::vector_to_string(ang, 5), x + marginLeft + nameSpacing, y + currentLine);
+	this->drawStringAt(cw, "Air Speed", x + marginLeft, y + currentLine); //speed relative to cars forward
+	this->drawStringAt(cw, sp::to_string(airspeed, 4), x + marginLeft + nameSpacing, y + currentLine);
 }
 
 void Painter::drawSliderValues(CanvasWrapper cw, CarWrapper car, int x, int y)
@@ -145,7 +124,7 @@ void Painter::drawSliderValues(CanvasWrapper cw, CarWrapper car, int x, int y)
 	Vector stabilization = Vector(*s->pitch_scalar, *s->roll_scalar, *s->yaw_scalar);
 	float lift =*s->lift;
 	float boost = *s->boost;
-	float speed = *s->max_speed;
+	float speed = (2300 * *s->max_speed);
 	float throttle = *s->throttle;
 	int marginLeft = 10;
 	int marginTop = 20;
@@ -246,23 +225,26 @@ void Painter::drawYawPlane(CanvasWrapper cw, CarWrapper car, int x, int y, float
 	Vector2_ angleLoc(10, 10);
 	Vector2_ axisVerLabelLoc(-15, -85);
 	Vector2_ axisHorLabelLoc(75, 5);
-	drawLine(cw, offset + center * scale, offset + (center + axisVer) * scale);	// x-axis
-	drawLine(cw, offset + center * scale, offset + (center + axisHor) * scale);	// y-axis
+	//drawLine(cw, offset + center * scale, offset + (center + axisVer) * scale);	// x-axis
+	//drawLine(cw, offset + center * scale, offset + (center + axisHor) * scale);	// y-axis
 	float cosTheta = Vector::dot(fwdHor, Vector(1, 0, 0));
 	float theta = acos(cosTheta);
 	if ((Vector::cross(Vector(1, 0, 0), fwdHor)).Z > 0) { theta = -theta; }
-	Vector2_ frontLeft(-42, -73);	// approximate shape/size of octane
-	Vector2_ frontRight(42, -73);
-	Vector2_ backLeft(-42, 45);
-	Vector2_ backRight(42, 45);
-	drawLine(cw, offset + (center + frontLeft.rotate(theta)) * scale, offset + (center + frontRight.rotate(theta)) * scale);	// front and back of car
-	drawLine(cw, offset + (center + backLeft.rotate(theta)) * scale, offset + (center + backRight.rotate(theta)) * scale);
-	drawLine(cw, offset + (center + frontLeft.rotate(theta)) * scale, offset + (center + backLeft.rotate(theta)) * scale);
-	drawLine(cw, offset + (center + frontRight.rotate(theta)) * scale, offset + (center + backRight.rotate(theta)) * scale);
+	//Vector2_ frontLeft(-42, -73);	// approximate shape/size of octane
+	//Vector2_ frontRight(42, -73);
+	//Vector2_ backLeft(-42, 45);
+	//Vector2_ backRight(42, 45);
+	//drawLine(cw, offset + (center + frontLeft.rotate(theta)) * scale, offset + (center + frontRight.rotate(theta)) * scale);	// front and back of car
+	//drawLine(cw, offset + (center + backLeft.rotate(theta)) * scale, offset + (center + backRight.rotate(theta)) * scale);
+	//drawLine(cw, offset + (center + frontLeft.rotate(theta)) * scale, offset + (center + backLeft.rotate(theta)) * scale);
+	//drawLine(cw, offset + (center + frontRight.rotate(theta)) * scale, offset + (center + backRight.rotate(theta)) * scale);
 	cw.SetColor(255, 255, 255, 128);	// fwd arrow
 	drawLine(cw, offset + center * scale, offset + (center + orientArrow.rotate(theta)) * scale);
+	
 	cw.SetColor(0, 255, 0, 255);	// velocity arrow
-	drawLine(cw, offset + center * scale, offset + (center + velArrow) * scale);
+//	drawLine(cw, offset + center * scale, offset + (center + velArrow) * scale);
+	drawLine(cw, offset + center * scale, offset + (center + velArrow));
+
 	this->drawStringAt(cw, sp::to_string(theta), offset + angleLoc * scale);
 	this->drawStringAt(cw, "x", offset + (center + axisVerLabelLoc) * scale);
 	this->drawStringAt(cw, "y", offset + (center + axisHorLabelLoc) * scale);

@@ -21,7 +21,7 @@
 #include <filesystem>
 #include "Preset.h"
 
-BAKKESMOD_PLUGIN(flightplugin, "Flight plugin", "1.0.0", PLUGINTYPE_FREEPLAY)
+BAKKESMOD_PLUGIN(flightplugin, "Flight plugin", "1.8008135", PLUGINTYPE_FREEPLAY)
 
 using namespace sp;
 
@@ -46,6 +46,7 @@ void flightplugin::onLoad()
 	lift = make_shared<float>(0.0f);
 	forceMode = make_shared<int>(0);
 	throttle = make_shared<float>(1.0f);
+	utq = make_shared<float>(1.0f);
 	preset_int = make_shared<int>(0);
 	preset = std::make_shared<Preset>(Preset());
 
@@ -74,7 +75,9 @@ void flightplugin::onLoad()
 	cvarManager->registerCvar("fp_lift", "0", "Scales Up/Down Lift", true, true, 0.f, true, 10.f, true).bindTo(lift);
 	cvarManager->registerCvar("fp_boost", "1", "Boost Power Multiplier", true, true, 0.f, true, 10.f).bindTo(boost);
 	cvarManager->registerCvar("fp_speed", "1", "Terminal Velocity Multiplier", true, true, 0.000499, true, 10.f).bindTo(max_speed);
-	cvarManager->registerCvar("fp_throttle", "1", "Air Throttle Force Multiplier", true, true, 0.f, true, 10.f, false).bindTo(throttle);
+	cvarManager->registerCvar("fp_throttle", "1", "Air Throttle Force Multiplier", true, true, 1.f, true, 100.f, false).bindTo(throttle); //increased min 0 to 1, and max 10 to 100
+
+	cvarManager->registerCvar("fp_utq", "1", "Control surface loss", true, true, 0.f, true, 10.f, false).bindTo(utq);
 
 	cvarManager->registerCvar("fp_enabled", "0", "Enables/disable flight lift functionality", true, true, 0.f, true, .5f, false)
 		.addOnValueChanged(std::bind(&flightplugin::OnEnabledChanged, this, std::placeholders::_1, std::placeholders::_2));
@@ -112,7 +115,7 @@ inline bool FileExist(const std::string& name)
 	struct stat buffer;
 	return (stat(name.c_str(), &buffer) == 0);
 }
-void flightplugin::OnCreateChanged(std::string eventName, CVarWrapper cvar)
+void flightplugin::OnCreateChanged(std::string eventName, CVarWrapper cvar) //Preset stuff
 {
 	if (!cvar.getBoolValue())
 		return;
@@ -201,7 +204,7 @@ void flightplugin::OnCreateChanged(std::string eventName, CVarWrapper cvar)
 	cvarManager->executeCommand("cl_settings_refreshplugins", false);
 
 }
-void flightplugin::OnDeleteChanged(std::string eventName, CVarWrapper cvar)
+void flightplugin::OnDeleteChanged(std::string eventName, CVarWrapper cvar) //Preset stuff
 {
 	auto preset_name = *name;
 	// Open flightplugin.set and remove that line
@@ -326,7 +329,7 @@ inline bool isInteger(const std::string& s)
 
 	return (*p == 0);
 }
-void flightplugin::OnPresetChanged(std::string oldvalue, CVarWrapper cvar)
+void flightplugin::OnPresetChanged(std::string oldvalue, CVarWrapper cvar) //Preset stuff
 {
 	auto val = cvar.getStringValue();
 	//string tmp = cvar.
@@ -469,26 +472,44 @@ void flightplugin::OnSetInput(CarWrapper cw, void * params, string funcName)
 		car.SetMaxLinearSpeed2(2300 * (*max_speed));
 		car.GetBoostComponent().SetBoostForce(178500 * (*boost)); //178500 is the OG BoostSpeed
 
-
-		/* oh neat */
+		/* Throttle */ 		//Rotator uTorque = {(*speedTorqueRatio * 130.0f), (*speedTorqueRatio * 95.0f), (*speedTorqueRatio * 400)};
 		Rotator defaultTorque = { 130, 95, 400 };
-
 		AirControlComponentWrapper acc = car.GetAirControlComponent();
-		acc.SetThrottleForce(12000 * (*throttle));
-		float speedTorqueRatio = 1300 / speed;
-		Rotator newTorque = (defaultTorque * speedTorqueRatio);
-		acc.SetAirTorque(newTorque);
+			acc.SetThrottleForce(12000 * (*throttle));
+			float currentmax = (2300 * *max_speed);
+			float percm = (speed / currentmax);
 
-		/*Auto Stickywheels*/
+		/*Takeoff Check*/
+		float defaultThrottle = 12000;
 		bool grounded = car.IsOnGround();
-		if (grounded && speed >= 1300)
+
+		if (!gameWrapper->GetLocalCar().IsNull())
 		{
-			car.SetStickyForce({ 0.f,0.f });
-		}
-		else
-		{
-			car.SetStickyForce({ 0.5,1.5 }); // OG values are  .5, 1.5 -- Ground/Wall
-			acc.SetAirTorque(defaultTorque);
+			if (!grounded && percm <= 0.95)
+			{
+				float STR = 0.35f;
+				Rotator uTorque = {(int) (STR * 130.0f), (int) (STR * 95.0f), (int) (STR * 400.0f)};
+				acc.SetAirTorque(uTorque);
+			}
+			if (!grounded && percm > 0.95)
+			{
+				float STR = 0.20f;
+				Rotator uTorque = {(int)(STR * 130.0f), (int)(STR * 95.0f), (int)(STR * 400.0f)};
+				acc.SetAirTorque(uTorque);
+			}
+			else
+			{
+				if (grounded && speed >= 1300)
+				{
+					car.SetStickyForce({ 0.f,0.f });
+				}
+
+				else
+				{
+					car.SetStickyForce({ 0.5,1.5 }); // OG values are  .5, 1.5 -- [Ground, Wall]
+					acc.SetAirTorque(defaultTorque); //Air control surface sensitivity
+				}
+			}
 		}
 	}
 }
