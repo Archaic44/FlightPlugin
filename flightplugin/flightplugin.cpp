@@ -46,7 +46,7 @@ void flightplugin::onLoad()
 	lift = make_shared<float>(0.0f);
 	forceMode = make_shared<int>(0);
 	throttle = make_shared<float>(1.0f);
-	utq = make_shared<float>(1.0f);
+	percm = make_shared<float>(1.0f);
 	preset_int = make_shared<int>(0);
 	preset = std::make_shared<Preset>(Preset());
 
@@ -77,7 +77,7 @@ void flightplugin::onLoad()
 	cvarManager->registerCvar("fp_speed", "1", "Terminal Velocity Multiplier", true, true, 0.000499, true, 10.f).bindTo(max_speed);
 	cvarManager->registerCvar("fp_throttle", "1", "Air Throttle Force Multiplier", true, true, 1.f, true, 100.f, false).bindTo(throttle); //increased min 0 to 1, and max 10 to 100
 
-	cvarManager->registerCvar("fp_utq", "1", "Control surface loss", true, true, 0.f, true, 10.f, false).bindTo(utq);
+	//cvarManager->registerCvar("fp_utq", "1", "Control surface loss", true, true, 0.f, true, 10.f, false).bindTo(utq);
 
 	cvarManager->registerCvar("fp_enabled", "0", "Enables/disable flight lift functionality", true, true, 0.f, true, .5f, false)
 		.addOnValueChanged(std::bind(&flightplugin::OnEnabledChanged, this, std::placeholders::_1, std::placeholders::_2));
@@ -472,7 +472,7 @@ void flightplugin::OnSetInput(CarWrapper cw, void * params, string funcName)
 		car.SetMaxLinearSpeed2(2300 * (*max_speed));
 		car.GetBoostComponent().SetBoostForce(178500 * (*boost)); //178500 is the OG BoostSpeed
 
-		/* Throttle */ 		//Rotator uTorque = {(*speedTorqueRatio * 130.0f), (*speedTorqueRatio * 95.0f), (*speedTorqueRatio * 400)};
+		/* Throttle */ 
 		Rotator defaultTorque = { 130, 95, 400 };
 		AirControlComponentWrapper acc = car.GetAirControlComponent();
 			acc.SetThrottleForce(12000 * (*throttle));
@@ -485,15 +485,21 @@ void flightplugin::OnSetInput(CarWrapper cw, void * params, string funcName)
 
 		if (!gameWrapper->GetLocalCar().IsNull())
 		{
-			if (!grounded && percm <= 0.95)
+			if (!grounded && percm <= 0.70) // 0% - 70% of max speed
 			{
-				float STR = 0.35f;
-				Rotator uTorque = {(int) (STR * 130.0f), (int) (STR * 95.0f), (int) (STR * 400.0f)};
+				float STR = 0.25f;
+				Rotator uTorque = {(int)(STR * 130.0f), (int)(STR * 95.0f), (int)(STR * 400.0f)};
 				acc.SetAirTorque(uTorque);
 			}
-			if (!grounded && percm > 0.95)
+			if (!grounded && percm > 0.70 && percm <= 0.90) // 70% - 90% of max speed
 			{
-				float STR = 0.20f;
+				float STR = 0.23f;
+				Rotator uTorque = { (int)(STR * 130.0f), (int)(STR * 95.0f), (int)(STR * 400.0f) };
+				acc.SetAirTorque(uTorque);
+			}
+			if (!grounded && percm > 0.90) // 90% - 100% of max speed
+			{
+				float STR = 0.21f;
 				Rotator uTorque = {(int)(STR * 130.0f), (int)(STR * 95.0f), (int)(STR * 400.0f)};
 				acc.SetAirTorque(uTorque);
 			}

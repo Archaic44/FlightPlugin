@@ -44,7 +44,7 @@ public:
 	std::shared_ptr<bool> enabled, create, fp_delete;
 	std::shared_ptr<std::string> name;
 	std::shared_ptr<float> throttle;
-	std::shared_ptr<float> utq;
+	std::shared_ptr<float> percm;
 
 	void OnSetInput(CarWrapper cw, void* params, string funcName);
 	void OnFreeplayLoad(std::string eventName);

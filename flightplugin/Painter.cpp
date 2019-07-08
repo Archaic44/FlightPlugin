@@ -81,13 +81,16 @@ void Painter::drawCarDerivedInfo(CanvasWrapper cw, CarWrapper car, int x, int y)
 
 	// Ground Speeds
 	Vector groundVel = Vector(lin.X, lin.Y, 0);
-	auto airspeed = abs(Vector::dot(groundVel, fwd)); // ground speed relative to cars forward
+	auto airspeed = abs(Vector::dot(groundVel, fwd)); // speed relative to car forward direction
 
 	// Car's Velocities
 	auto linLocalFwd = Vector::dot(lin, fwd);
 	auto linLocalRight = Vector::dot(lin, right);
 	auto linLocalUp = Vector::dot(lin, up);
 	Vector linLocal = Vector(linLocalFwd, linLocalRight, linLocalUp);
+	float speed = lin.magnitude();
+	float currentmax = (2300 * *max_speed); //how do i use the value from flightplugin.cpp ?
+	float percm = speed / currentmax;
 
 	int marginLeft = 10;
 	int marginTop = 20;
@@ -114,6 +117,8 @@ void Painter::drawCarDerivedInfo(CanvasWrapper cw, CarWrapper car, int x, int y)
 	currentLine += lineSpacing;
 	this->drawStringAt(cw, "Air Speed", x + marginLeft, y + currentLine); //speed relative to cars forward
 	this->drawStringAt(cw, sp::to_string(airspeed, 4), x + marginLeft + nameSpacing, y + currentLine);
+	this->drawStringAt(cw, "% max speed", x + marginLeft, y + currentLine); //speed relative to cars forward
+	this->drawStringAt(cw, sp::to_string(percm, 4), x + marginLeft + nameSpacing, y + currentLine);
 }
 
 void Painter::drawSliderValues(CanvasWrapper cw, CarWrapper car, int x, int y)
