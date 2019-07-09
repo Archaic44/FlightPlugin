@@ -30,11 +30,11 @@ void Painter::drawPanels(CanvasWrapper cw)
 		RBState rbstate = car.GetRBState();
 		if (cvarManager->getCvar("showCarDerivedInfo").getBoolValue())
 		{
-			drawCarDerivedInfo(cw, car, 20, 700);
+			drawCarDerivedInfo(cw, car, 20, 750);
 		}
 		if (cvarManager->getCvar("showYaw").getBoolValue())
 		{
-			drawYawPlane(cw, car, 20, 400, 1);
+			drawYawPlane(cw, car, 20, 550, 1);
 		}
 		if (cvarManager->getCvar("showSlider").getBoolValue())
 		{
@@ -88,10 +88,8 @@ void Painter::drawCarDerivedInfo(CanvasWrapper cw, CarWrapper car, int x, int y)
 	auto linLocalRight = Vector::dot(lin, right);
 	auto linLocalUp = Vector::dot(lin, up);
 	Vector linLocal = Vector(linLocalFwd, linLocalRight, linLocalUp);
-	float speed = lin.magnitude();
-	float currentmax = (2300 * *max_speed); //how do i use the value from flightplugin.cpp ?
-	float percm = speed / currentmax;
-
+	float percm = *shared->percm;
+	int speedmode = *shared->speedmode;
 	int marginLeft = 10;
 	int marginTop = 20;
 	int titleSpacing = 120;
@@ -102,7 +100,7 @@ void Painter::drawCarDerivedInfo(CanvasWrapper cw, CarWrapper car, int x, int y)
 	Vector2 pos = { x,y };
 	cw.SetPosition(pos);
 	cw.SetColor(COLOR_PANEL);
-	Vector2 box = { 250, 120 }; //Flight Plugin box size width, length
+	Vector2 box = { 250, 160 }; //Flight Plugin box size width, length
 	cw.FillBox(box);
 	cw.SetColor(COLOR_TEXT);
 	cw.SetColor(205, 155, 15, 255);
@@ -117,8 +115,12 @@ void Painter::drawCarDerivedInfo(CanvasWrapper cw, CarWrapper car, int x, int y)
 	currentLine += lineSpacing;
 	this->drawStringAt(cw, "Air Speed", x + marginLeft, y + currentLine); //speed relative to cars forward
 	this->drawStringAt(cw, sp::to_string(airspeed, 4), x + marginLeft + nameSpacing, y + currentLine);
-	this->drawStringAt(cw, "% max speed", x + marginLeft, y + currentLine); //speed relative to cars forward
+	currentLine += lineSpacing;
+	this->drawStringAt(cw, "% Max speed", x + marginLeft, y + currentLine);
 	this->drawStringAt(cw, sp::to_string(percm, 4), x + marginLeft + nameSpacing, y + currentLine);
+	currentLine += lineSpacing;
+	this->drawStringAt(cw, "Speedmode", x + marginLeft, y + currentLine);
+	this->drawStringAt(cw, sp::to_string(speedmode, 4), x + marginLeft + nameSpacing, y + currentLine);
 }
 
 void Painter::drawSliderValues(CanvasWrapper cw, CarWrapper car, int x, int y)

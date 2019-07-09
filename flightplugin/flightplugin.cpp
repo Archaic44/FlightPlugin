@@ -49,6 +49,7 @@ void flightplugin::onLoad()
 	percm = make_shared<float>(1.0f);
 	preset_int = make_shared<int>(0);
 	preset = std::make_shared<Preset>(Preset());
+	speedmode = make_shared<int>(0);
 
 	logger.cvarManager = this->cvarManager;
 	cmdManager.cvarManager = this->cvarManager;
@@ -487,19 +488,25 @@ void flightplugin::OnSetInput(CarWrapper cw, void * params, string funcName)
 		{
 			if (!grounded && percm <= 0.70) // 0% - 70% of max speed
 			{
-				float STR = 0.25f;
+				float STR = 0.34f;
+				int speedmode = 1;
+				cvarManager->log("Speedmode 1");
 				Rotator uTorque = {(int)(STR * 130.0f), (int)(STR * 95.0f), (int)(STR * 400.0f)};
 				acc.SetAirTorque(uTorque);
 			}
 			if (!grounded && percm > 0.70 && percm <= 0.90) // 70% - 90% of max speed
 			{
-				float STR = 0.23f;
-				Rotator uTorque = { (int)(STR * 130.0f), (int)(STR * 95.0f), (int)(STR * 400.0f) };
+				float STR = 0.27f;
+				int speedmode = 2;
+				cvarManager->log("Speedmode 2");
+				Rotator uTorque = {(int)(STR * 130.0f), (int)(STR * 95.0f), (int)(STR * 400.0f)};
 				acc.SetAirTorque(uTorque);
 			}
 			if (!grounded && percm > 0.90) // 90% - 100% of max speed
 			{
-				float STR = 0.21f;
+				float STR = 0.20f;
+				int speedmode = 3;
+				cvarManager->log("Speedmode 3");
 				Rotator uTorque = {(int)(STR * 130.0f), (int)(STR * 95.0f), (int)(STR * 400.0f)};
 				acc.SetAirTorque(uTorque);
 			}
