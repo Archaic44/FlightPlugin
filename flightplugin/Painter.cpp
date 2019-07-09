@@ -122,7 +122,7 @@ void Painter::drawCarDerivedInfo(CanvasWrapper cw, CarWrapper car, int x, int y)
 	this->drawStringAt(cw, sp::rot_to_string(airtorque, 4), x + marginLeft + nameSpacing, y + currentLine);
 	currentLine += lineSpacing;
 	this->drawStringAt(cw, "Speedmode", x + marginLeft, y + currentLine);
-	this->drawStringAt(cw, sp::to_string(speedmode, 4), x + marginLeft + nameSpacing, y + currentLine);
+	this->drawStringAt(cw, sp::to_string(speedmode, 1), x + marginLeft + nameSpacing, y + currentLine);
 }
 
 void Painter::drawSliderValues(CanvasWrapper cw, CarWrapper car, int x, int y)
