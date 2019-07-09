@@ -50,6 +50,7 @@ void flightplugin::onLoad()
 	preset_int = make_shared<int>(0);
 	preset = std::make_shared<Preset>(Preset());
 	speedmode = make_shared<int>(0);
+	STR = make_shared<float>(0.0f);
 
 	logger.cvarManager = this->cvarManager;
 	cmdManager.cvarManager = this->cvarManager;
@@ -486,29 +487,32 @@ void flightplugin::OnSetInput(CarWrapper cw, void * params, string funcName)
 
 		if (!gameWrapper->GetLocalCar().IsNull())
 		{
-			if (!grounded && percm <= 0.90) // 0% - 70% of max speed
+			if (!grounded && percm <= 0.70) // 0% - 70% of max speed
 			{
-				float STR = 0.30f;
+				*STR = 0.30f;
 				*speedmode = 1;
-				cvarManager->log("Speedmode 0");
-				Rotator uTorque = {(int)(STR * 130.0f), (int)(STR * 95.0f), (int)(STR * 400.0f)};
-				acc.SetAirTorque(uTorque);
-			}
-			if (!grounded && percm > 0.70 && percm <= 0.90) // 70% - 90% of max speed
-			{
-				float STR = 0.25f;
-				*speedmode = 2;
 				cvarManager->log("Speedmode 1");
-				Rotator uTorque = {(int)(STR * 130.0f), (int)(STR * 95.0f), (int)(STR * 400.0f)};
-				acc.SetAirTorque(uTorque);
+				//Rotator uTorque = { (int)(*STR * 130.0f), (int)(*STR * 95.0f), (int)(*STR * 400.0f) };
+				Rotator aTorque = {39, 29, 120};
+				acc.SetAirTorque(aTorque);
 			}
-			if (!grounded && percm > 0.90) // 90% - 100% of max speed
+			else if (!grounded && percm > 0.70 && percm <= 0.90) // 70% - 90% of max speed
 			{
-				float STR = 0.20f;
-				*speedmode = 3;
+				*STR = 0.25f;
+				*speedmode = 2;
 				cvarManager->log("Speedmode 2");
-				Rotator uTorque = {(int)(STR * 130.0f), (int)(STR * 95.0f), (int)(STR * 400.0f)};
-				acc.SetAirTorque(uTorque);
+				Rotator bTorque = {33, 24, 100};
+				//Rotator uTorque = {(int)(*STR * 130.0f), (int)(*STR * 95.0f), (int)(*STR * 400.0f)};
+				acc.SetAirTorque(bTorque);
+			}
+			else if (!grounded && percm > 0.90) // 90% - 100% of max speed
+			{
+				*STR = 0.20f;
+				*speedmode = 3;
+				cvarManager->log("Speedmode 3");
+				Rotator cTorque = {26, 19, 80};
+				//Rotator uTorque = {(int)(*STR * 130.0f), (int)(*STR * 95.0f), (int)(*STR * 400.0f)};
+				acc.SetAirTorque(cTorque);
 			}
 			else
 			{
