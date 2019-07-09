@@ -483,46 +483,54 @@ void flightplugin::OnSetInput(CarWrapper cw, void * params, string funcName)
 		/*Takeoff Check*/
 		float defaultThrottle = 12000;
 		bool grounded = car.IsOnGround();
-
+		float STR; // The slope of the line
+		int subtract;
 		if (!gameWrapper->GetLocalCar().IsNull())
 		{
-			if (!grounded && percm <= 0.90) // 0% - 70% of max speed
-			{
-				float STR = 0.30f;
-				*speedmode = 1;
-				cvarManager->log("Speedmode 0");
-				Rotator uTorque = {(int)(STR * 130.0f), (int)(STR * 95.0f), (int)(STR * 400.0f)};
-				acc.SetAirTorque(uTorque);
-			}
-			if (!grounded && percm > 0.70 && percm <= 0.90) // 70% - 90% of max speed
-			{
-				float STR = 0.25f;
-				*speedmode = 2;
-				cvarManager->log("Speedmode 1");
-				Rotator uTorque = {(int)(STR * 130.0f), (int)(STR * 95.0f), (int)(STR * 400.0f)};
-				acc.SetAirTorque(uTorque);
-			}
-			if (!grounded && percm > 0.90) // 90% - 100% of max speed
-			{
-				float STR = 0.20f;
-				*speedmode = 3;
-				cvarManager->log("Speedmode 2");
-				Rotator uTorque = {(int)(STR * 130.0f), (int)(STR * 95.0f), (int)(STR * 400.0f)};
-				acc.SetAirTorque(uTorque);
-			}
-			else
-			{
-				if (grounded && speed >= 2000)
-				{
+			if (grounded) {
+				if (speed > 2300)
 					car.SetStickyForce({ 0.f,0.f });
-				}
-
-				else
+				else 
 				{
 					car.SetStickyForce({ 0.5,1.5 }); // OG values are  .5, 1.5 -- [Ground, Wall]
 					acc.SetAirTorque(defaultTorque); //Air control surface sensitivity
 				}
 			}
+			else { // not grounded -- therefore do air logic rotator stuff
+				if (percm <= .7) // if slow
+				{
+					STR = percm * .1;
+					*speedmode = 1;
+					cvarManager->log("Speedmode 1");
+					Rotator uTorque = { (int)(130.0f - STR*130), (int)(95.0f - STR * 95), (int)(400.0f - STR* 400) };
+					acc.SetAirTorque(uTorque);
+				}
+				else if (percm <= .9) // else if not slow, but not fast
+				{
+					STR = percm * .25f;
+					float old_STR = .07f;
+					float intercept_pitch = (130 - old_STR* 130) + 130 * .7*.25;
+					float intercept_roll = (95 - old_STR * 95) + 95 * .7*.25;
+					float intercept_yaw = (400 - old_STR * 400) + 400 * .7*.25;
+					*speedmode = 2;
+					cvarManager->log("Speedmode 2");
+					Rotator uTorque = { (int)(intercept_pitch - 130*STR), (int)(intercept_roll - 130* STR), (int)(intercept_yaw - 130*STR) };
+					acc.SetAirTorque(uTorque);
+				}
+				else  //  else fast
+				{
+					STR = percm * 0.6f;
+					float old_STR = .25*.9;
+					float intercept_pitch = (130 - old_STR * 130) + 130 * .9*.6;
+					float intercept_roll = (95 - old_STR * 95) + 95 * .9*.6;
+					float intercept_yaw = (400 - old_STR * 400) + 400 * .9*.6;
+					*speedmode = 3;
+					cvarManager->log("Speedmode 3");
+					Rotator uTorque = { (int)(intercept_pitch - 130 * STR), (int)(intercept_roll - 130 * STR), (int)(intercept_yaw - 130 * STR) };
+					acc.SetAirTorque(uTorque);
+				}
+			}
 		}
+		
 	}
 }
