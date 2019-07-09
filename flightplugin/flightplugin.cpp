@@ -497,36 +497,66 @@ void flightplugin::OnSetInput(CarWrapper cw, void * params, string funcName)
 				}
 			}
 			else { // not grounded -- therefore do air logic rotator stuff
+				float slopeA = -.1;		// Slope of the section from 0.0 - 0.7 -- adjustable
+				float slopeB = -.6;		// Slope of the section from 0.7 - 0.9 -- adjustable
+				float slopeC = -.95;		// Slope of the section from 0.9 - 1.0 -- adjustable
 				if (percm <= .7) // if slow
 				{
-					STR = percm * .1;
+					STR = percm * slopeA;
 					*speedmode = 1;
-					cvarManager->log("Speedmode 1");
-					Rotator uTorque = { (int)(130.0f - STR*130), (int)(95.0f - STR * 95), (int)(400.0f - STR* 400) };
+					float intercept_pitch = 130.f; // intercept is default
+					float intercept_roll = 95.f; // intercept is default
+					float intercept_yaw = 400.f; // intercept is default
+					Rotator uTorque = { (int)(130*STR + intercept_pitch), (int)(95*STR + intercept_roll), (int)(400*STR + intercept_yaw) };
 					acc.SetAirTorque(uTorque);
 				}
 				else if (percm <= .9) // else if not slow, but not fast
 				{
-					STR = percm * .25f;
-					float old_STR = .07f;
-					float intercept_pitch = (130 - old_STR* 130) + 130 * .7*.25;
-					float intercept_roll = (95 - old_STR * 95) + 95 * .7*.25;
-					float intercept_yaw = (400 - old_STR * 400) + 400 * .7*.25;
+					STR = percm * slopeB;
+					float cp = .7; // connection point where sectionA/B meet
+					float sectionA_p_offset = cp*slopeA*130; // pitch offset
+					float sectionA_r_offset = cp*slopeA*95;  // roll offset
+					float sectionA_y_offset = cp*slopeA*400; // yaw offset
+
+					float sectionB_p_offset = cp*slopeB*130; // pitch offset
+					float sectionB_r_offset = cp*slopeB*95;  // roll offset
+					float sectionB_y_offset = cp*slopeB*400; // yaw offset
+
+					float intercept_pitch = 130 + sectionA_p_offset - sectionB_p_offset; // new pitch intercept
+					float intercept_roll = 95 + sectionA_r_offset - sectionB_r_offset; // new roll intercept
+					float intercept_yaw = 400 + sectionA_y_offset - sectionB_y_offset; // new yaw intercept
 					*speedmode = 2;
-					cvarManager->log("Speedmode 2");
-					Rotator uTorque = { (int)(intercept_pitch - 130*STR), (int)(intercept_roll - 130* STR), (int)(intercept_yaw - 130*STR) };
+					Rotator uTorque = { (int)(130 * STR + intercept_pitch), (int)(95 * STR + intercept_roll), (int)(400 * STR + intercept_yaw) };
 					acc.SetAirTorque(uTorque);
 				}
 				else  //  else fast
 				{
-					STR = percm * 0.6f;
-					float old_STR = .25*.9;
-					float intercept_pitch = (130 - old_STR * 130) + 130 * .9*.6;
-					float intercept_roll = (95 - old_STR * 95) + 95 * .9*.6;
-					float intercept_yaw = (400 - old_STR * 400) + 400 * .9*.6;
+					STR = percm * slopeC;
+					float cp1 = .7; // connection point where sectionA/B meet
+					float cp2 = .9; // connection point where sectionB/C meet
+
+					float sectionA_p_offset = cp1 * slopeA * 130; // pitch offset
+					float sectionA_r_offset = cp1 * slopeA * 95;  // roll offset
+					float sectionA_y_offset = cp1 * slopeA * 400; // yaw offset
+
+					float sectionB1_p_offset = cp1 * slopeB * 130; // pitch offset
+					float sectionB1_r_offset = cp1 * slopeB * 95;  // roll offset
+					float sectionB1_y_offset = cp1 * slopeB * 400; // yaw offset
+
+					float sectionB2_p_offset = cp2 * slopeB * 130; // pitch offset
+					float sectionB2_r_offset = cp2 * slopeB * 95;  // roll offset
+					float sectionB2_y_offset = cp2 * slopeB * 400; // yaw offset
+
+
+					float sectionC_p_offset = cp2 * slopeC * 130; // pitch offset
+					float sectionC_r_offset = cp2 * slopeC * 95;  // roll offset
+					float sectionC_y_offset = cp2 * slopeC * 400; // yaw offset
+
+					float intercept_pitch = 130 + sectionA_p_offset + sectionB2_p_offset - sectionB1_p_offset - sectionC_p_offset; // new pitch intercept
+					float intercept_roll  =  95 + sectionA_r_offset + sectionB2_r_offset - sectionB1_r_offset - sectionC_r_offset; // new roll intercept
+					float intercept_yaw   = 400 + sectionA_y_offset + sectionB2_y_offset - sectionB1_y_offset - sectionC_y_offset; // new yaw intercept
 					*speedmode = 3;
-					cvarManager->log("Speedmode 3");
-					Rotator uTorque = { (int)(intercept_pitch - 130 * STR), (int)(intercept_roll - 130 * STR), (int)(intercept_yaw - 130 * STR) };
+					Rotator uTorque = { (int)(130 * STR + intercept_pitch), (int)(95 * STR + intercept_roll), (int)(400 * STR + intercept_yaw) };
 					acc.SetAirTorque(uTorque);
 				}
 			}
