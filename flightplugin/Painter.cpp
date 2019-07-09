@@ -82,7 +82,9 @@ void Painter::drawCarDerivedInfo(CanvasWrapper cw, CarWrapper car, int x, int y)
 	// Ground Speeds
 	Vector groundVel = Vector(lin.X, lin.Y, 0);
 	auto airspeed = abs(Vector::dot(groundVel, fwd)); // speed relative to car forward direction
-
+	AirControlComponentWrapper acc = car.GetAirControlComponent();
+	Rotator airtorque = acc.GetAirTorque();
+	
 	// Car's Velocities
 	auto linLocalFwd = Vector::dot(lin, fwd);
 	auto linLocalRight = Vector::dot(lin, right);
@@ -116,8 +118,8 @@ void Painter::drawCarDerivedInfo(CanvasWrapper cw, CarWrapper car, int x, int y)
 	this->drawStringAt(cw, "Air Speed", x + marginLeft, y + currentLine); //speed relative to cars forward
 	this->drawStringAt(cw, sp::to_string(airspeed, 4), x + marginLeft + nameSpacing, y + currentLine);
 	currentLine += lineSpacing;
-	this->drawStringAt(cw, "% Max speed", x + marginLeft, y + currentLine);
-	this->drawStringAt(cw, sp::to_string(percm, 4), x + marginLeft + nameSpacing, y + currentLine);
+	this->drawStringAt(cw, "AirTorque", x + marginLeft, y + currentLine);
+	this->drawStringAt(cw, sp::rot_to_string(airtorque, 4), x + marginLeft + nameSpacing, y + currentLine);
 	currentLine += lineSpacing;
 	this->drawStringAt(cw, "Speedmode", x + marginLeft, y + currentLine);
 	this->drawStringAt(cw, sp::to_string(speedmode, 4), x + marginLeft + nameSpacing, y + currentLine);
