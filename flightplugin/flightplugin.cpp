@@ -486,33 +486,33 @@ void flightplugin::OnSetInput(CarWrapper cw, void * params, string funcName)
 
 		if (!gameWrapper->GetLocalCar().IsNull())
 		{
-			if (!grounded && percm <= 0.70) // 0% - 70% of max speed
+			if (!grounded && percm <= 0.90) // 0% - 70% of max speed
 			{
-				float STR = 0.34f;
-				int speedmode = 1;
-				cvarManager->log("Speedmode 1");
+				float STR = 0.30f;
+				*speedmode = 1;
+				cvarManager->log("Speedmode 0");
 				Rotator uTorque = {(int)(STR * 130.0f), (int)(STR * 95.0f), (int)(STR * 400.0f)};
 				acc.SetAirTorque(uTorque);
 			}
 			if (!grounded && percm > 0.70 && percm <= 0.90) // 70% - 90% of max speed
 			{
-				float STR = 0.27f;
-				int speedmode = 2;
-				cvarManager->log("Speedmode 2");
+				float STR = 0.25f;
+				*speedmode = 2;
+				cvarManager->log("Speedmode 1");
 				Rotator uTorque = {(int)(STR * 130.0f), (int)(STR * 95.0f), (int)(STR * 400.0f)};
 				acc.SetAirTorque(uTorque);
 			}
 			if (!grounded && percm > 0.90) // 90% - 100% of max speed
 			{
 				float STR = 0.20f;
-				int speedmode = 3;
-				cvarManager->log("Speedmode 3");
+				*speedmode = 3;
+				cvarManager->log("Speedmode 2");
 				Rotator uTorque = {(int)(STR * 130.0f), (int)(STR * 95.0f), (int)(STR * 400.0f)};
 				acc.SetAirTorque(uTorque);
 			}
 			else
 			{
-				if (grounded && speed >= 1300)
+				if (grounded && speed >= 2000)
 				{
 					car.SetStickyForce({ 0.f,0.f });
 				}
