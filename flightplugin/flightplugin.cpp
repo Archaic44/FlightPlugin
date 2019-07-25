@@ -473,23 +473,35 @@ void flightplugin::OnSetInput(CarWrapper cw, void * params, string funcName)
 		car.SetMaxLinearSpeed2(2300 * (*max_speed));
 		car.GetBoostComponent().SetBoostForce(178500 * (*boost)); //178500 is the OG BoostSpeed
 
-		/* Throttle */ 
-		Rotator defaultTorque = { 130, 95, 400 };
+		/* Throttle & Control Sensitivity*/ 
+		Rotator defaultTorque = { 130, 95, 400 }; // Yaw, Pitch, Roll
 		AirControlComponentWrapper acc = car.GetAirControlComponent();
-			acc.SetThrottleForce(12000 * (*throttle));
+			//acc.SetThrottleForce(12000 * (*throttle));
 			float currentmax = (2300 * *max_speed);
 			float percm = (speed / currentmax);
 
+			if (!gameWrapper->GetLocalCar().IsNull())
+			{
+				acc.SetThrottleForce(12000 * (*throttle));
+
+			}
+		
 		/*Takeoff Check*/
-		float defaultThrottle = 12000;
 		bool grounded = car.IsOnGround();
 		float STR; // The slope of the line
 		int subtract;
+		
+		grounded ? cout<<"yes" : cout<<"no";
+		
 		if (!gameWrapper->GetLocalCar().IsNull())
 		{
 			if (grounded) {
-				if (speed > 2300)
-					car.SetStickyForce({ 0.f,0.f });
+				if (percm > .2)
+					car.SetStickyForce({ 0.f,0.f }); //turn off stickywheels at 2300 so you can takeoff without jumping
+				else if (percm <= .2)
+				{
+
+				}
 				else 
 				{
 					car.SetStickyForce({ 0.5,1.5 }); // OG values are  .5, 1.5 -- [Ground, Wall]
@@ -497,37 +509,40 @@ void flightplugin::OnSetInput(CarWrapper cw, void * params, string funcName)
 				}
 			}
 			else { // not grounded -- therefore do air logic rotator stuff
-				float slopeA = -.1;		// Slope of the section from 0.0 - 0.7 -- adjustable
-				float slopeB = -.6;		// Slope of the section from 0.7 - 0.9 -- adjustable
-				float slopeC = -.95;		// Slope of the section from 0.9 - 1.0 -- adjustable
+				float slopeA = -.3;		// Slope of the section from 0.0 - 0.7 -- adjustable
+				float slopeB = -.8;		// Slope of the section from 0.7 - 0.9 -- adjustable
+				float slopeC = -.9;		// Slope of the section from 0.9 - 1.0 -- adjustable
 				if (percm <= .7) // if slow
 				{
-					STR = percm * slopeA;
 					*speedmode = 1;
-					float intercept_pitch = 130.f; // intercept is default
-					float intercept_roll = 95.f; // intercept is default
-					float intercept_yaw = 400.f; // intercept is default
-					Rotator uTorque = { (int)(130*STR + intercept_pitch), (int)(95*STR + intercept_roll), (int)(400*STR + intercept_yaw) };
+					STR = percm * slopeA;
+					float intercept_yaw = 130.f; // intercept is default
+					float intercept_pitch = 95.f; // intercept is default
+					float intercept_roll = 400.f; // intercept is default
+					Rotator uTorque = { (int)(130 * STR + intercept_yaw), (int)(95 * STR + intercept_pitch), (int)(400 * STR + intercept_roll) };
 					acc.SetAirTorque(uTorque);
 				}
 				else if (percm <= .9) // else if not slow, but not fast
 				{
+					*speedmode = 2;
+
 					STR = percm * slopeB;
 					float cp = .7; // connection point where sectionA/B meet
-					float sectionA_p_offset = cp*slopeA*130; // pitch offset
-					float sectionA_r_offset = cp*slopeA*95;  // roll offset
-					float sectionA_y_offset = cp*slopeA*400; // yaw offset
+					float sectionA_p_offset = cp * slopeA * 130; // pitch offset
+					float sectionA_r_offset = cp * slopeA * 95;  // roll offset
+					float sectionA_y_offset = cp * slopeA * 400; // yaw offset
 
-					float sectionB_p_offset = cp*slopeB*130; // pitch offset
-					float sectionB_r_offset = cp*slopeB*95;  // roll offset
-					float sectionB_y_offset = cp*slopeB*400; // yaw offset
+					float sectionB_p_offset = cp * slopeB * 130; // pitch offset
+					float sectionB_r_offset = cp * slopeB * 95;  // roll offset
+					float sectionB_y_offset = cp * slopeB * 400; // yaw offset
 
-					float intercept_pitch = 130 + sectionA_p_offset - sectionB_p_offset; // new pitch intercept
-					float intercept_roll = 95 + sectionA_r_offset - sectionB_r_offset; // new roll intercept
-					float intercept_yaw = 400 + sectionA_y_offset - sectionB_y_offset; // new yaw intercept
-					*speedmode = 2;
-					Rotator uTorque = { (int)(130 * STR + intercept_pitch), (int)(95 * STR + intercept_roll), (int)(400 * STR + intercept_yaw) };
+					float intercept_yaw = 130 + sectionA_p_offset - sectionB_p_offset; // new pitch intercept
+					float intercept_pitch = 95 + sectionA_r_offset - sectionB_r_offset; // new roll intercept
+					float intercept_roll = 400 + sectionA_y_offset - sectionB_y_offset; // new yaw intercept
+
+					Rotator uTorque = { (int)(130 * STR + intercept_yaw), (int)(95 * STR + intercept_pitch), (int)(400 * STR + intercept_roll) };
 					acc.SetAirTorque(uTorque);
+
 				}
 				else  //  else fast
 				{
@@ -552,15 +567,16 @@ void flightplugin::OnSetInput(CarWrapper cw, void * params, string funcName)
 					float sectionC_r_offset = cp2 * slopeC * 95;  // roll offset
 					float sectionC_y_offset = cp2 * slopeC * 400; // yaw offset
 
-					float intercept_pitch = 130 + sectionA_p_offset + sectionB2_p_offset - sectionB1_p_offset - sectionC_p_offset; // new pitch intercept
-					float intercept_roll  =  95 + sectionA_r_offset + sectionB2_r_offset - sectionB1_r_offset - sectionC_r_offset; // new roll intercept
-					float intercept_yaw   = 400 + sectionA_y_offset + sectionB2_y_offset - sectionB1_y_offset - sectionC_y_offset; // new yaw intercept
+					float intercept_yaw = 130 + sectionA_p_offset + sectionB2_p_offset - sectionB1_p_offset - sectionC_p_offset; // new pitch intercept
+					float intercept_pitch = 95 + sectionA_r_offset + sectionB2_r_offset - sectionB1_r_offset - sectionC_r_offset; // new roll intercept
+					float intercept_roll = 400 + sectionA_y_offset + sectionB2_y_offset - sectionB1_y_offset - sectionC_y_offset; // new yaw intercept
 					*speedmode = 3;
-					Rotator uTorque = { (int)(130 * STR + intercept_pitch), (int)(95 * STR + intercept_roll), (int)(400 * STR + intercept_yaw) };
+					Rotator uTorque = { (int)(130 * STR + intercept_yaw), (int)(95 * STR + intercept_pitch), (int)(400 * STR + intercept_roll) };
 					acc.SetAirTorque(uTorque);
+					acc.SetThrottleForce(12000);
 				}
 			}
 		}
-		
+
 	}
 }

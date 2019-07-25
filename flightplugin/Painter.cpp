@@ -92,6 +92,8 @@ void Painter::drawCarDerivedInfo(CanvasWrapper cw, CarWrapper car, int x, int y)
 	Vector linLocal = Vector(linLocalFwd, linLocalRight, linLocalUp);
 	float percm = *shared->percm;
 	int speedmode = *shared->speedmode;
+	float throttle = *shared->throttle;
+		float throtty = (12000 * throttle);
 	int marginLeft = 10;
 	int marginTop = 20;
 	int titleSpacing = 120;
@@ -123,6 +125,9 @@ void Painter::drawCarDerivedInfo(CanvasWrapper cw, CarWrapper car, int x, int y)
 	currentLine += lineSpacing;
 	this->drawStringAt(cw, "Speedmode", x + marginLeft, y + currentLine);
 	this->drawStringAt(cw, sp::to_string(speedmode, 1), x + marginLeft + nameSpacing, y + currentLine);
+	currentLine += lineSpacing;
+	this->drawStringAt(cw, "Throttle Power", x + marginLeft, y + currentLine);
+	this->drawStringAt(cw, sp::to_string(throtty, 6), x + marginLeft + nameSpacing, y + currentLine);
 }
 
 void Painter::drawSliderValues(CanvasWrapper cw, CarWrapper car, int x, int y)
