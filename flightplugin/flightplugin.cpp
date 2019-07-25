@@ -391,6 +391,23 @@ Vector flightplugin::reflect_v1_on_v2(Vector incident, Vector n_unit)
 	Vector r_unit = change - incident;
 	return r_unit; // Return unit vector of direction air bounces off car
 }
+double CalculateCubicPolynomial(double x, double a, double b, double c)
+{
+	return a * pow(x, 3) + b * pow(x, 2) + c * x;
+}
+double CalcTorque(double percent)
+{
+	double a = -3.326;
+	double b = 3.426;
+	double c = 0.1;
+	if (percent >= 0 && percent <= 1)
+	{
+		return CalculateCubicPolynomial(percent, a, b, c);
+	}
+	else {
+		//Throw some exception or log some error
+	}
+}
 void flightplugin::OnSetInput(CarWrapper cw, void * params, string funcName)
 {
 	if (gameWrapper->IsInFreeplay() && *enabled && !cw.IsNull() && !cw.GetBoostComponent().IsNull())
@@ -480,36 +497,24 @@ void flightplugin::OnSetInput(CarWrapper cw, void * params, string funcName)
 			float currentmax = (2300 * *max_speed);
 			float percm = (speed / currentmax);
 
-			if (!gameWrapper->GetLocalCar().IsNull())
-			{
+			if (!gameWrapper->GetLocalCar().IsNull()) {
 				acc.SetThrottleForce(12000 * (*throttle));
 
 			}
 		
-		/*Takeoff Check*/
-		bool grounded = car.IsOnGround();
 		float STR; // The slope of the line
 		int subtract;
-		
-		grounded ? cout<<"yes" : cout<<"no";
-		
-		if (!gameWrapper->GetLocalCar().IsNull())
-		{
-			if (grounded) {
-				if (percm > .2)
-					car.SetStickyForce({ 0.f,0.f }); //turn off stickywheels at 2300 so you can takeoff without jumping
-				else if (percm <= .2)
-				{
+		float torque = CalcTorque(percm);
 
-				}
-				else 
-				{
-					car.SetStickyForce({ 0.5,1.5 }); // OG values are  .5, 1.5 -- [Ground, Wall]
-					acc.SetAirTorque(defaultTorque); //Air control surface sensitivity
-				}
-			}
-			else { // not grounded -- therefore do air logic rotator stuff
-				float slopeA = -.3;		// Slope of the section from 0.0 - 0.7 -- adjustable
+		/*Stickywheels*/
+		if (!gameWrapper->GetLocalCar().IsNull() && (percm > 0.3f))	{
+			car.SetStickyForce({ 0.f,0.f }); //stickywheels off
+		}
+		else {
+			car.SetStickyForce({ 0.5,1.5 }); //stickywheels on
+		}
+			
+		/*		float slopeA = -.3;		// Slope of the section from 0.0 - 0.7 -- adjustable
 				float slopeB = -.8;		// Slope of the section from 0.7 - 0.9 -- adjustable
 				float slopeC = -.9;		// Slope of the section from 0.9 - 1.0 -- adjustable
 				if (percm <= .7) // if slow
@@ -575,8 +580,5 @@ void flightplugin::OnSetInput(CarWrapper cw, void * params, string funcName)
 					acc.SetAirTorque(uTorque);
 					acc.SetThrottleForce(12000);
 				}
-			}
+			}*/
 		}
-
-	}
-}
