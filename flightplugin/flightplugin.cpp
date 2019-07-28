@@ -408,7 +408,7 @@ double CalcTorque(double percent)
 		//Throw some exception or log some error
 	}
 }
-void flightplugin::OnSetInput(CarWrapper cw, void * params, string funcName)
+void flightplugin::OnSetInput(CarWrapper cw, void* params, string funcName)
 {
 	if (gameWrapper->IsInFreeplay() && *enabled && !cw.IsNull() && !cw.GetBoostComponent().IsNull())
 	{
@@ -480,7 +480,7 @@ void flightplugin::OnSetInput(CarWrapper cw, void * params, string funcName)
 
 		/* Begin Lift Calculation*/
 		Vector wing_lift = up * (*lift) * Vector::dot(lin, fwd) * .2;
-		Vector front_pressure = fwd * (*lift) * Vector::dot(lin,fwd) * -.05;
+		Vector front_pressure = fwd * (*lift) * Vector::dot(lin, fwd) * -.05;
 		Vector side_pressure = right * (*lift) * Vector::dot(lin, right) * -.25;
 		Vector top_pressure = up * (*lift) * Vector::dot(lin, up) * -.25;
 		Vector lift = (wing_lift + front_pressure + side_pressure + top_pressure) * coef;
@@ -490,30 +490,30 @@ void flightplugin::OnSetInput(CarWrapper cw, void * params, string funcName)
 		car.SetMaxLinearSpeed2(2300 * (*max_speed));
 		car.GetBoostComponent().SetBoostForce(178500 * (*boost)); //178500 is the OG BoostSpeed
 
-		/* Throttle & Control Sensitivity*/ 
+		/* Throttle & Control Sensitivity*/
 		Rotator defaultTorque = { 130, 95, 400 }; // Yaw, Pitch, Roll
 		AirControlComponentWrapper acc = car.GetAirControlComponent();
-			//acc.SetThrottleForce(12000 * (*throttle));
-			float currentmax = (2300 * *max_speed);
-			float percm = (speed / currentmax);
+		//acc.SetThrottleForce(12000 * (*throttle));
+		float currentmax = (2300 * *max_speed);
+		float percm = (speed / currentmax);
 
-			if (!gameWrapper->GetLocalCar().IsNull()) {
-				acc.SetThrottleForce(12000 * (*throttle));
+		if (!gameWrapper->GetLocalCar().IsNull()) {
+			acc.SetThrottleForce(12000 * (*throttle));
 
-			}
-		
+		}
+
 		float STR; // The slope of the line
 		int subtract;
 		float torque = CalcTorque(percm);
 
 		/*Stickywheels*/
-		if (!gameWrapper->GetLocalCar().IsNull() && (percm > 0.3f))	{
+		if (!gameWrapper->GetLocalCar().IsNull() && (percm > 0.3f)) {
 			car.SetStickyForce({ 0.f,0.f }); //stickywheels off
 		}
 		else {
 			car.SetStickyForce({ 0.5,1.5 }); //stickywheels on
 		}
-			
+
 		/*		float slopeA = -.3;		// Slope of the section from 0.0 - 0.7 -- adjustable
 				float slopeB = -.8;		// Slope of the section from 0.7 - 0.9 -- adjustable
 				float slopeC = -.9;		// Slope of the section from 0.9 - 1.0 -- adjustable
@@ -581,4 +581,5 @@ void flightplugin::OnSetInput(CarWrapper cw, void * params, string funcName)
 					acc.SetThrottleForce(12000);
 				}
 			}*/
-		}
+	}
+}
