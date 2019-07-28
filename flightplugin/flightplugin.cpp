@@ -20,7 +20,7 @@
 #include "utils\parser.h"
 #include <filesystem>
 #include "Preset.h"
-
+#include <cmath>
 BAKKESMOD_PLUGIN(flightplugin, "Flight plugin", "1.8008135", PLUGINTYPE_FREEPLAY)
 
 using namespace sp;
@@ -391,22 +391,18 @@ Vector flightplugin::reflect_v1_on_v2(Vector incident, Vector n_unit)
 	Vector r_unit = change - incident;
 	return r_unit; // Return unit vector of direction air bounces off car
 }
-double CalculateCubicPolynomial(double x, double a, double b, double c)
+inline double CalculateGaussian(double x)
 {
-	return a * pow(x, 3) + b * pow(x, 2) + c * x;
+	double opt_control = .5;
+	return exp(pow(x-opt_control,2.0)*.2);
 }
-double CalcTorque(double percent)
+inline double CalcTorque(double percent)
 {
-	double a = -3.326;
-	double b = 3.426;
-	double c = 0.1;
 	if (percent >= 0 && percent <= 1)
 	{
-		return CalculateCubicPolynomial(percent, a, b, c);
+		return CalculateGaussian(percent);
 	}
-	else {
-		//Throw some exception or log some error
-	}
+	return 0;
 }
 void flightplugin::OnSetInput(CarWrapper cw, void* params, string funcName)
 {
@@ -499,11 +495,7 @@ void flightplugin::OnSetInput(CarWrapper cw, void* params, string funcName)
 
 		if (!gameWrapper->GetLocalCar().IsNull()) {
 			acc.SetThrottleForce(12000 * (*throttle));
-
 		}
-
-		float STR; // The slope of the line
-		int subtract;
 		float torque = CalcTorque(percm);
 
 		/*Stickywheels*/
@@ -512,6 +504,10 @@ void flightplugin::OnSetInput(CarWrapper cw, void* params, string funcName)
 		}
 		else {
 			car.SetStickyForce({ 0.5,1.5 }); //stickywheels on
+		}
+		if (!car.IsOnGround())
+		{
+			acc.SetAirTorque(defaultTorque*torque);
 		}
 	}
 }
