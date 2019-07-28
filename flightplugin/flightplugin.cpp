@@ -394,7 +394,7 @@ Vector flightplugin::reflect_v1_on_v2(Vector incident, Vector n_unit)
 inline double CalculateGaussian(double x)
 {
 	double opt_control = .5;
-	return exp(pow(x-opt_control,2.0)*.2);
+	return exp(-10*pow(x-opt_control,2.0));
 }
 inline double CalcTorque(double percent)
 {
@@ -507,7 +507,8 @@ void flightplugin::OnSetInput(CarWrapper cw, void* params, string funcName)
 		}
 		if (!car.IsOnGround())
 		{
-			acc.SetAirTorque(defaultTorque*torque);
+			Rotator newTorque = defaultTorque * torque;
+			acc.SetAirTorque(newTorque);
 		}
 	}
 }
