@@ -1,10 +1,10 @@
 #include "CommandsManager.h"
 #include "HelperFunctions.h"
-#include "utils\parser.h"
-#include "bakkesmod\wrappers\GameEvent\TutorialWrapper.h"
-#include "bakkesmod\wrappers\GameObject\CarWrapper.h"
-#include "bakkesmod\wrappers\arraywrapper.h"
-#include "bakkesmod\wrappers\GameObject\CarComponent\VehicleSimWrapper.h"
+#include "utils/parser.h"
+#include "bakkesmod/wrappers/GameEvent/TutorialWrapper.h"
+#include "bakkesmod/wrappers/GameObject/CarWrapper.h"
+#include "bakkesmod/wrappers/ArrayWrapper.h"
+#include "bakkesmod/wrappers/GameObject/CarComponent/VehicleSimWrapper.h"
 
 using namespace sp;
 

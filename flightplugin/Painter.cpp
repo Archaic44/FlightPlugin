@@ -1,8 +1,8 @@
-#include "bakkesmod\wrappers\GameEvent\TutorialWrapper.h"
-#include "bakkesmod\wrappers\GameObject\CarWrapper.h"
-#include "bakkesmod\wrappers\GameObject\CarComponent\VehicleSimWrapper.h"
-#include "bakkesmod\wrappers\arraywrapper.h"
-#include "bakkesmod\wrappers\wrapperstructs.h"
+#include "bakkesmod/wrappers/GameEvent/TutorialWrapper.h"
+#include "bakkesmod/wrappers/GameObject/CarWrapper.h"
+#include "bakkesmod/wrappers/GameObject/CarComponent/VehicleSimWrapper.h"
+#include "bakkesmod/wrappers/arraywrapper.h"
+#include "bakkesmod/wrappers/wrapperstructs.h"
 #include "Painter.h"
 #include "HelperFunctions.h"
 #include "flightplugin.h"
@@ -42,7 +42,6 @@ void Painter::drawPanels(CanvasWrapper cw)
 		}
 	}
 }
-
 void Painter::drawStringAt(CanvasWrapper cw, std::string text, int x, int y, Color col)
 {
 	Vector2 vec = { x,y };
@@ -50,19 +49,16 @@ void Painter::drawStringAt(CanvasWrapper cw, std::string text, int x, int y, Col
 	cw.SetColor(col.r, col.g, col.b, col.a);
 	cw.DrawString(text);
 }
-
 void Painter::drawStringAt(CanvasWrapper cw, std::string text, Vector2_ loc, Color col)
 {
 	drawStringAt(cw, text, loc.X, loc.Y, col);
 }
-
 void Painter::drawLine(CanvasWrapper cw, Vector2_ v1, Vector2_ v2)
 {
 	Vector2 _v1 = { v1.X, v1.Y };
 	Vector2 _v2 = { v2.X, v2.Y };
 	cw.DrawLine(_v1, _v2);
 }
-
 void Painter::drawCarDerivedInfo(CanvasWrapper cw, CarWrapper car, int x, int y)
 {
 	// Car Info
@@ -129,7 +125,6 @@ void Painter::drawCarDerivedInfo(CanvasWrapper cw, CarWrapper car, int x, int y)
 	this->drawStringAt(cw, "Throttle Power", x + marginLeft, y + currentLine);
 	this->drawStringAt(cw, sp::to_string(throtty, 6), x + marginLeft + nameSpacing, y + currentLine);
 }
-
 void Painter::drawSliderValues(CanvasWrapper cw, CarWrapper car, int x, int y)
 {
 	flightplugin* s = shared;
@@ -182,7 +177,6 @@ void Painter::drawSliderValues(CanvasWrapper cw, CarWrapper car, int x, int y)
 	this->drawStringAt(cw, "Throttle: ", pos.X + marginLeft, pos.Y + currentLine);
 	this->drawStringAt(cw, sp::to_string(throttle, 3), pos.X + marginLeft + nameSpacing, pos.Y + currentLine);
 }
-
 Vector Painter::Rotate(Vector aVec, double roll, double yaw, double pitch)
 {
 	float sx = sin(roll);
@@ -202,7 +196,6 @@ Vector Painter::Rotate(Vector aVec, double roll, double yaw, double pitch)
 	aVec.Y = tmp;
 	return aVec;
 }
-
 void Painter::drawYawPlane(CanvasWrapper cw, CarWrapper car, int x, int y, float scale)
 {
 	RBState rbstate = car.GetRBState();

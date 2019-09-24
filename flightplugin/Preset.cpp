@@ -2,8 +2,7 @@
 
 void Preset::FillPreset(int preset)
 {
-	switch (preset)
-	{
+	switch (preset){
 	case 0:
 	{
 		Preset tmp = Preset(); // Default
@@ -55,9 +54,7 @@ void Preset::FillPreset(int preset)
 	}
 	}
 }
-
-void Preset::SetPreset()
-{
+void Preset::SetPreset(){
 	cvarManager->executeCommand("fp_speed " + sp::to_string(preset.array[0], 5), false);
 	cvarManager->executeCommand("fp_boost " + sp::to_string(preset.array[1], 5), false);
 	cvarManager->executeCommand("fp_air_density " + sp::to_string(preset.array[2], 5), false);
@@ -73,13 +70,10 @@ void Preset::SetPreset()
 	cvarManager->executeCommand("fp_lift " + sp::to_string(preset.array[12], 5), false);
 	cvarManager->executeCommand("fp_throttle " + sp::to_string(preset.array[13], 5), false);
 }
-
-ArrayHolder* Preset::GetArray()
-{
+ArrayHolder* Preset::GetArray(){
 	return &preset;
 }
-void Preset::SetArray(ArrayHolder* val)
-{
+void Preset::SetArray(ArrayHolder* val){
 	preset.array[0] = val->array[0];
 	preset.array[1] = val->array[1];
 	preset.array[2] = val->array[2];
@@ -95,8 +89,6 @@ void Preset::SetArray(ArrayHolder* val)
 	preset.array[12] = val->array[12];
 	preset.array[13] = val->array[13];
 }
-
-int Preset::GetArraySize()
-{
+int Preset::GetArraySize(){
 	return 14;
 }

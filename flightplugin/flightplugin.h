@@ -1,10 +1,10 @@
 #pragma once
 #pragma comment (lib, "bakkesmod.lib")
-#include "bakkesmod\plugin\bakkesmodplugin.h"
-#include "bakkesmod\wrappers\CVarManagerWrapper.h"
-#include "bakkesmod\wrappers\GameWrapper.h"
-#include "bakkesmod\wrappers\gamewrapper.h"
-#include "bakkesmod\wrappers\wrapperstructs.h"
+#include "bakkesmod/plugin/bakkesmodplugin.h"
+#include "bakkesmod/wrappers/CVarManagerWrapper.h"
+#include "bakkesmod/wrappers/GameWrapper.h"
+#include "bakkesmod/wrappers/gamewrapper.h"
+#include "bakkesmod/wrappers/wrapperstructs.h"
 #include <fstream>
 #include <iostream>
 #include <iomanip>

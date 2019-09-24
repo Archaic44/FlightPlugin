@@ -1,31 +1,31 @@
-#define LINMATH_H //Conflicts with linmath.h if we done declare this here
+#define LINMATH_H //Conflicts with linmath.h if we don't declare this here
 
-#include "flightplugin.h"
-#include "bakkesmod\wrappers\ArrayWrapper.h"
-#include "bakkesmod\wrappers\GameObject/CarWrapper.h"
-#include "bakkesmod\wrappers\GameObject\CarComponent\WheelWrapper.h"
-#include "bakkesmod\wrappers\CVarManagerWrapper.h"
-#include "bakkesmod\wrappers\CVarWrapper.h"
-#include "bakkesmod\wrappers\Engine\ActorWrapper.h"
-#include "bakkesmod\wrappers\GameEvent\ServerWrapper.h"
-#include "bakkesmod\wrappers\GameObject\BallWrapper.h"
-#include "bakkesmod\wrappers\GameObject\CarComponent\PrimitiveComponentWrapper.h"
-#include "bakkesmod\wrappers\GameObject\CarComponent\VehicleSimWrapper.h"
-#include "bakkesmod\wrappers\GameObject\CarWrapper.h"
-#include "bakkesmod\wrappers\GameObject\RBActorWrapper.h"
-#include "bakkesmod\wrappers\gamewrapper.h"
-#include "bakkesmod\wrappers\wrapperstructs.h"
-#include "bakkesmod\wrappers\GameEvent\TutorialWrapper.h"
-#include "bakkesmod/wrappers/arraywrapper.h"
-#include "utils\parser.h"
-#include <filesystem>
 #include "Preset.h"
+#include "bakkesmod/wrappers/arraywrapper.h"
+#include "bakkesmod/wrappers/ArrayWrapper.h"
+#include "bakkesmod/wrappers/CVarManagerWrapper.h"
+#include "bakkesmod/wrappers/CVarWrapper.h"
+#include "bakkesmod/wrappers/Engine/ActorWrapper.h"
+#include "bakkesmod/wrappers/GameEvent/ServerWrapper.h"
+#include "bakkesmod/wrappers/GameEvent/TutorialWrapper.h"
+#include "bakkesmod/wrappers/GameObject/CarWrapper.h"
+#include "bakkesmod/wrappers/GameObject/BallWrapper.h"
+#include "bakkesmod/wrappers/GameObject/CarComponent/PrimitiveComponentWrapper.h"
+#include "bakkesmod/wrappers/GameObject/CarComponent/VehicleSimWrapper.h"
+#include "bakkesmod/wrappers/GameObject/CarComponent/WheelWrapper.h"
+#include "bakkesmod/wrappers/GameObject/CarWrapper.h"
+#include "bakkesmod/wrappers/GameObject/RBActorWrapper.h"
+#include "bakkesmod/wrappers/gamewrapper.h"
+#include "bakkesmod/wrappers/wrapperstructs.h"
+#include "flightplugin.h"
+#include "utils/parser.h"
+#include <filesystem>
 
-BAKKESMOD_PLUGIN(flightplugin, "Flight plugin", "1.8008135", PLUGINTYPE_FREEPLAY)
+BAKKESMOD_PLUGIN(flightplugin, "Flight plugin", "1.8008135.69", PLUGINTYPE_FREEPLAY)
 
 using namespace sp;
 
-void flightplugin::onLoad()
+void flightplugin::onLoad() // All the variables
 {
 	enabled = make_shared<bool>(false);
 	create = make_shared<bool>(false);
@@ -101,7 +101,7 @@ void flightplugin::onLoad()
 	gameWrapper->HookEvent("Function ProjectX.GFxDataStore_X.CreateObject", bind(&flightplugin::OnSpawn, this, std::placeholders::_1));
 	cvarManager->executeCommand("cl_settings_refreshplugins",false);
 }
-inline string ArrayToString(ArrayHolder* array, int size)
+inline string ArrayToString(ArrayHolder* array, int size) // What is this for?
 {
 	string returnstring = "";
 	for (int temp = 0; temp < size; temp++)
@@ -213,7 +213,7 @@ void flightplugin::OnDeleteChanged(std::string eventName, CVarWrapper cvar) //Pr
 	std::ofstream fileout("./bakkesmod/plugins/settings/tmp.set");
 	if (!filein.is_open() || !fileout.is_open())
 	{
-		cvarManager->log("Error opening flightplugin.set files. Close flightplugin.set if open in an editor.");
+		cvarManager->log("Error opening the flightplugin.set file. It may be open in a text editor still.");
 	}
 	else
 	{

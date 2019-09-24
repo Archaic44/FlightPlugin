@@ -2,31 +2,24 @@
 
 using namespace sp;
 
-void Logger::log(std::string s)
-{
+void Logger::log(std::string s){
 	cvarManager->log(s);
 }
-void Logger::log(Vector v)
-{
+void Logger::log(Vector v){
 	cvarManager->log(sp::vector_to_string(v));
 }
-void Logger::log(Rotator r)
-{
+void Logger::log(Rotator r){
 	cvarManager->log(sp::rot_to_string(r));
 }
-void Logger::log(float f)
-{
+void Logger::log(float f){
 	cvarManager->log(sp::to_string(f));
 }
-void Logger::log(bool b)
-{
+void Logger::log(bool b){
 	cvarManager->log(to_string(b));
 }
-void Logger::log(int i)
-{
+void Logger::log(int i){
 	cvarManager->log(to_string(i));
 }
-void Logger::log(unsigned long l)
-{
+void Logger::log(unsigned long l){
 	cvarManager->log(to_string(l));
 }
